@@ -96,6 +96,41 @@ function pref(type: string, value: string) : string {
     return type + value;
 }
 
+export function writeDynamic(graph: IGraph, except: string[] = []) : string {
+    const dynamicTerms = new Set<string>();
+
+    graph.value.forEach( (pso) => {
+        const dynamicPredicates = scanDynamicTerm(pso.predicate);
+        dynamicPredicates.forEach( (dyn) => dynamicTerms.add(dyn) );
+    });
+
+    return  Array.from(dynamicTerms)
+                 .filter( (dyn) => {
+                    return ! except.includes(dyn);
+                 })
+                 .map( (dyn) => {
+                        return `:- dynamic('<${dyn}>'/2).`;
+                 }).join("\n");
+}
+
+function scanDynamicTerm(term: ITerm) : string[] {
+    if (term.type === 'NamedNode') {
+        return [term.value];
+    }
+    else if (term.type === 'Graph') {
+        const result : string[] = [];
+        term.value.forEach( (gi) => {
+            const dynamicTermsP = scanDynamicTerm(gi.predicate);
+            dynamicTermsP.forEach( (dyn) => result.push(dyn));
+        });
+
+        return result;
+    }
+    else {
+        return [];
+    }
+}
+
 export function writeGraph(graph: IGraph) : string {
     const result : string[] = [];
 

@@ -1,3 +1,5 @@
+:- dynamic('<http://eyereasoner.github.io/eye/reasoning/witch#SAMEWEIGHT>'/2).
+:- dynamic('<http://www.w3.org/2000/10/swap/log#implies>'/2).
 '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'('<http://eyereasoner.github.io/eye/reasoning/witch#GIRL>','<http://eyereasoner.github.io/eye/reasoning/witch#WOMAN>').
 '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'('<http://eyereasoner.github.io/eye/reasoning/witch#DUCK>','<http://eyereasoner.github.io/eye/reasoning/witch#FLOATS>').
 '<http://eyereasoner.github.io/eye/reasoning/witch#SAMEWEIGHT>'('<http://eyereasoner.github.io/eye/reasoning/witch#DUCK>','<http://eyereasoner.github.io/eye/reasoning/witch#GIRL>').
