@@ -1,0 +1,21 @@
+{
+  "name": "n32s",
+  "version": "1.0.0",
+  "description": "Notation3 to N3S translator",
+  "main": "js/index.js",
+  "author": "Patrick Hochstenbach <Patrick.Hochstenbach@UGent.be>",
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn exec tsc",
+    "demo": "node js/index.js",
+    "n3s": "eye --nope --pass --intermediate data/00-simple.n3s data/00-simple.n3"
+  },
+  "dependencies": {
+    "log4js": "^6.9.1",
+    "n3": "^1.16.4"
+  },
+  "devDependencies": {
+    "@types/n3": "^1.10.4",
+    "typescript": "^5.1.3"
+  }
+}

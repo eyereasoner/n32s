@@ -1,0 +1,27 @@
+@prefix : <urn:example.org:> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+
+#:test :is true .
+#:test :is "blue ball" .
+#:test :is 123 .
+#:test :is :Person .
+#:test :is _:x .
+#:test :is () .
+#:test :is ( :Red :Green :Blue ) .
+#:test :is ( :Red (:Green 123) :Blue ) .
+#() :is :Red .
+#() :is (:Red :Blue).
+#_:x a :Color .
+#(_:x) a :Color .
+#(12 _:x) a :Color .
+#(:Red :Blue) a :Color .
+#[] a [ a :Color ].
+#{ :a :b :c } a :Graph .
+#(_:x) log:onNegativeSurface {
+#    :a :b _:x .
+#    () log:onNegativeSurface {
+#        :c a _:x .
+#    } .
+#} .
+
+:Alice :thinks { :Bob :is :Smoking } .
