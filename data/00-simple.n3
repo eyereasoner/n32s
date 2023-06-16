@@ -13,28 +13,36 @@
 
 :Person :is :test .
 true :is :test .
-:false :is :test .
-# "blue ball" :is :test . N3 NOT SUPPORTED
+false :is :test .
+"blue ball"^^xsd:string :is :test . # see https://github.com/rdfjs/N3.js/issues/328 
 123 :is :test .
 "3.14"^^xsd:float :is :test .
+_:x :is :test .
+?x :is :test .
 
-#:test :is () .
-#:test :is ( :Red :Green :Blue ) .
-#:test :is ( :Red (:Green 123) :Blue ) .
-#() :is :Red .
-#() :is (:Red :Blue).
-#_:x a :Color .
-#(_:x) a :Color .
-#(12 _:x) a :Color .
-#(:Red :Blue) a :Color .
-#[] a [ a :Color ].
-#{ :a :b :c } a :Graph .
-#{ :a :b :c . :d :e :f } a :Graph .
-#(_:x) log:onNegativeSurface {
-#    :a :b _:x .
-#    () log:onNegativeSurface {
-#        :c a _:x .
-#    } .
-#} .
+:is :Person :test .
+#:is true :test . # see https://github.com/rdfjs/N3.js/issues/328
+#:is false :test .
+#:is "blue ball"^^xsd:string :test .
+#:is 123 :test . 
+#:is "3.14"^^xsd:string :test .
+#:is _:x :test . # NOT SUPPORTED YET
+#:is ?x :test.  # NOT SUPPORTED YE
 
-#:Alice :thinks { :Bob :is :Smoking } .
+:test :is () .
+:test :is ( :Red :Green :Blue ) .
+:test :is ( :Red (:Green 123) :Blue ) .
+
+() :is :test .
+( :Red :Green :Blue ) :is :test .
+( :Red (:Green 123) :Blue ) :is :test .
+
+#:is () :test . # not supported in n3
+#:is ( :Red :Green :Blue ) :test .
+#:is ( :Red (:Green 123) :Blue ) :test.
+
+:test :is { :a :b :c } .
+{ :a :b :c } :is :test .
+# :is { :a :b :c } :test . # not supported in n3
+
+{ :a :b ?x } :is { ?x :d :e } .
