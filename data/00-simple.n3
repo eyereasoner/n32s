@@ -1,11 +1,23 @@
 @prefix : <urn:example.org:> .
 @prefix log: <http://www.w3.org/2000/10/swap/log#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-#:test :is true .
-#:test :is "blue ball" .
-#:test :is 123 .
-#:test :is :Person .
-#:test :is _:x .
+:test :is :Person .
+:test :is true .
+:test :is false .
+:test :is "blue ball" .
+:test :is 123 .
+:test :is "3.14"^^xsd:float .
+:test :is _:x .
+:test :is ?x .
+
+:Person :is :test .
+true :is :test .
+:false :is :test .
+# "blue ball" :is :test . N3 NOT SUPPORTED
+123 :is :test .
+"3.14"^^xsd:float :is :test .
+
 #:test :is () .
 #:test :is ( :Red :Green :Blue ) .
 #:test :is ( :Red (:Green 123) :Blue ) .
@@ -18,11 +30,11 @@
 #[] a [ a :Color ].
 #{ :a :b :c } a :Graph .
 #{ :a :b :c . :d :e :f } a :Graph .
-(_:x) log:onNegativeSurface {
-    :a :b _:x .
-    () log:onNegativeSurface {
-        :c a _:x .
-    } .
-} .
+#(_:x) log:onNegativeSurface {
+#    :a :b _:x .
+#    () log:onNegativeSurface {
+#        :c a _:x .
+#    } .
+#} .
 
 #:Alice :thinks { :Bob :is :Smoking } .
