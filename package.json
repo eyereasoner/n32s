@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn exec tsc",
-    "demo": "node js/index.js",
+    "demo": "node js/index.js data/00-simple.n3",
     "n3s": "eye --nope --pass --intermediate data/00-simple.n3s data/00-simple.n3"
   },
   "dependencies": {

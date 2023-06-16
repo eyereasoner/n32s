@@ -17,11 +17,12 @@
 #(:Red :Blue) a :Color .
 #[] a [ a :Color ].
 #{ :a :b :c } a :Graph .
-#(_:x) log:onNegativeSurface {
-#    :a :b _:x .
-#    () log:onNegativeSurface {
-#        :c a _:x .
-#    } .
-#} .
+#{ :a :b :c . :d :e :f } a :Graph .
+(_:x) log:onNegativeSurface {
+    :a :b _:x .
+    () log:onNegativeSurface {
+        :c a _:x .
+    } .
+} .
 
-:Alice :thinks { :Bob :is :Smoking } .
+#:Alice :thinks { :Bob :is :Smoking } .

@@ -1,8 +1,8 @@
-flag('quantify', 'http://eyereasoner.github.io/.well-known/genid/481612749451286113#').
+flag('quantify', 'http://eyereasoner.github.io/.well-known/genid/2357237450845309970#').
 implies(exopred(A, B, C), answer(A, B, C), '<http://eulersharp.sourceforge.net/2003/03swap/pass>').
 scope('<file:///Users/hochsten/github.com/eyereasoner/n32s/data/00-simple.n3>').
 pfx(:, '<urn:example.org:>').
 pfx('log:', '<http://www.w3.org/2000/10/swap/log#>').
-'<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'([12, '<http://eyereasoner.github.io/.well-known/genid/481612749451286113#e_x_1>'], '<urn:example.org:Color>').
+'<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'(('<urn:example.org:b>'('<urn:example.org:a>', '<urn:example.org:c>'), '<urn:example.org:e>'('<urn:example.org:d>', '<urn:example.org:f>')), '<urn:example.org:Graph>').
 scount(1).
 end_of_file.
