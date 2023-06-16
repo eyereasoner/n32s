@@ -29,7 +29,7 @@ type IPSO = {
     object: ITerm ,
 };
 
-type ITerm = INamedNode | IBlankNode | ILiteral | IGraph | IList;
+type ITerm = INamedNode | IBlankNode | ILiteral | IVariable | IGraph | IList;
 
 type INamedNode = {
     type: 'NamedNode';
@@ -47,6 +47,12 @@ type ILiteral = {
     type: 'Literal';
     value: string;
     datatype: string;
+};
+
+type IVariable = {
+    type: 'Variable';
+    value: string;
+    datatype: null;
 };
 
 type IList = {
@@ -105,6 +111,9 @@ function writeTerm(term: ITerm) : string {
     else if (term.type === 'BlankNode') {
         return `'${term.value}'`;
     }
+    else if (term.type === 'Variable') {
+        return `${term.value}`;
+    }
     else if (term.type === 'List') {
         const result : string[] = [];
         term.value.forEach( (li) => {
@@ -134,7 +143,8 @@ function makeGraph(store: N3.Store, graph: N3.Term) : IGraph {
 
     // First process the named nodes...
     store.forEach((quad) => {
-        if (quad.subject.termType === 'NamedNode' 
+        if ((quad.subject.termType === 'NamedNode' ||
+             quad.subject.termType === 'Variable') 
                 && !isGraphLike(quad,graph)) {
             let subject   = parseTerm(quad.subject, store);
             let predicate = parseTerm(quad.predicate, store);
@@ -198,6 +208,12 @@ function parseTerm(term: N3.Term, store: N3.Store) : ITerm {
                 value: genid
             } as IBlankNode;   
         }
+    }
+    else if (term.termType === 'Variable') {
+        return {
+            type: 'Variable',
+            value: term.value
+        } as IVariable;
     }
     else {
         return {
