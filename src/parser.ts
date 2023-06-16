@@ -165,7 +165,7 @@ function writeTerm(term: ITerm) : string {
             return term.value;
         }
         else {
-            return `literal('${term.value},'${term.datatype})`;
+            return `literal('${term.value}','${term.datatype}')`;
         }
     }
     else if (term.type === 'BlankNode') {

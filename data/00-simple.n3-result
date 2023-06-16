@@ -5,7 +5,7 @@
 '<urn:example.org:is>'('<urn:example.org:test>',false).
 '<urn:example.org:is>'('<urn:example.org:test>','blue ball').
 '<urn:example.org:is>'('<urn:example.org:test>',123).
-'<urn:example.org:is>'('<urn:example.org:test>',literal('3.14,'http://www.w3.org/2001/XMLSchema#float)).
+'<urn:example.org:is>'('<urn:example.org:test>',literal('3.14','http://www.w3.org/2001/XMLSchema#float')).
 '<urn:example.org:is>'('<urn:example.org:test>','_:x').
 '<urn:example.org:is>'('<urn:example.org:test>',x).
 '<urn:example.org:is>'('<urn:example.org:test>',[]).
@@ -18,7 +18,7 @@
 '<urn:example.org:is>'(false,'<urn:example.org:test>').
 '<urn:example.org:is>'('blue ball','<urn:example.org:test>').
 '<urn:example.org:is>'(123,'<urn:example.org:test>').
-'<urn:example.org:is>'(literal('3.14,'http://www.w3.org/2001/XMLSchema#float),'<urn:example.org:test>').
+'<urn:example.org:is>'(literal('3.14','http://www.w3.org/2001/XMLSchema#float'),'<urn:example.org:test>').
 '<urn:example.org:is>'(x,'<urn:example.org:test>').
 '<urn:example.org:is>'([],'<urn:example.org:test>').
 '<urn:example.org:is>'('_:x','<urn:example.org:test>').
