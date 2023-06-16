@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import * as N3 from 'n3';
 import { parseN3File } from './parser';
 

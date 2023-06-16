@@ -1,14 +1,21 @@
 {
   "name": "n32s",
-  "version": "1.0.0",
-  "description": "Notation3 to N3S translator",
+  "version": "0.0.1",
+  "description": "Notation3 to N3S precompiler",
   "main": "js/index.js",
   "author": "Patrick Hochstenbach <Patrick.Hochstenbach@UGent.be>",
   "license": "MIT",
+  "keywords": [
+    "notation3",
+    "rdfsurfaces",
+    "reasoning"
+  ],
+  "bin": {
+    "n32s": "js/index.js"
+  },
   "scripts": {
     "build": "yarn exec tsc",
-    "demo": "node js/index.js data/00-simple.n3",
-    "n3s": "eye --nope --pass --intermediate data/00-simple.n3s data/00-simple.n3"
+    "demo": "node js/index.js data/00-simple.n3"
   },
   "dependencies": {
     "log4js": "^6.9.1",
