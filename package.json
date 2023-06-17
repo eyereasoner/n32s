@@ -1,6 +1,6 @@
 {
   "name": "n32s",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Notation3 (RDF Surfaces) to N3S precompiler",
   "main": "js/index.js",
   "types": "js/index.d.ts",
