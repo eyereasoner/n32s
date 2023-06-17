@@ -87,9 +87,6 @@ describe('N3SLexer', () => {
                     [ { type: '.', line: 0 } ,
                       { type: 'eof', line: 0 }
                     ]));
-
-
-
   });
 });
 
