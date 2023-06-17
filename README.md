@@ -1,6 +1,6 @@
 # n32s
 
-The n32s code is a precompiler from Notation3 to a N3S format that is used by Prolog reasoners such as [eye](https://github.com/eyereasoner/eye), [retina](https://github.com/eyereasoner/retina) and [Latar](https://github.com/MellonScholarlyCommunication/Latar)
+The n32s code is a precompiler from Notation3 (RDF Surfaces) to a N3S format that is used by Prolog reasoners such as [eye](https://github.com/eyereasoner/eye), [retina](https://github.com/eyereasoner/retina) and [Latar](https://github.com/MellonScholarlyCommunication/Latar)
 
 ## Installation
 
