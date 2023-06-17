@@ -2,8 +2,8 @@ import * as N3 from 'n3';
 import * as fs from 'fs';
 import { getLogger } from "log4js";
 
-const XSD  = 'http://www.w3.org/2001/XMLSchema#';
-const RDFS = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+const XSD = 'http://www.w3.org/2001/XMLSchema#';
+const RDF = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
 
 const logger = getLogger();
 
@@ -200,7 +200,7 @@ export function makeGraph(store: N3.Store, graph: N3.Term = N3.DataFactory.defau
         datatype: null
     };
 
-    // First process the named nodes...
+    // First process the named nodes and literals...
     store.forEach((quad) => {
         const termType = '' + quad.subject.termType;
 
@@ -246,7 +246,7 @@ export function makeGraph(store: N3.Store, graph: N3.Term = N3.DataFactory.defau
 
 function parseTerm(term: N3.Term, store: N3.Store) : ITerm {
     if (term.termType === 'NamedNode') {
-        if (term.value === pref(RDFS,'nil')) {
+        if (term.value === pref(RDF,'nil')) {
             return { type: 'List' , value: [] as ITerm[] } as IList;
         }
         else {
@@ -304,8 +304,8 @@ function isGraphLike(quad: N3.Quad, graph: N3.Term) : boolean {
 }
 
 function isListLike(quad: N3.Quad) : boolean {
-    if (quad.predicate.value === pref(RDFS,'first') ||
-        quad.predicate.value === pref(RDFS,'rest')) {
+    if (quad.predicate.value === pref(RDF,'first') ||
+        quad.predicate.value === pref(RDF,'rest')) {
         return true;
     }
     else {
@@ -314,8 +314,8 @@ function isListLike(quad: N3.Quad) : boolean {
 } 
 
 function isList(term: N3.Term, store: N3.Store) : boolean {
-    const first = store.getQuads(term,pref(RDFS,'first'),null,null);
-    const rest = store.getQuads(term,pref(RDFS,'rest'),null,null);
+    const first = store.getQuads(term,pref(RDF,'first'),null,null);
+    const rest = store.getQuads(term,pref(RDF,'rest'),null,null);
 
     if (first.length == 1 || rest.length == 1) {
         return true;
@@ -342,8 +342,8 @@ function makeList(term: N3.Term, store: N3.Store) : IList {
     let brake = false;
 
     do {
-        const first = store.getQuads(searchTerm,pref(RDFS,'first'),null,null);
-        const rest  = store.getQuads(searchTerm,pref(RDFS,'rest'),null,null);
+        const first = store.getQuads(searchTerm,pref(RDF,'first'),null,null);
+        const rest  = store.getQuads(searchTerm,pref(RDF,'rest'),null,null);
 
         if (first.length == 0) {
             if (rest.length == 0 || rest.length != 1) {
@@ -356,7 +356,7 @@ function makeList(term: N3.Term, store: N3.Store) : IList {
         else if (first.length != 1 || rest.length != 1) {
             brake = true;
         } 
-        else if (first[0].object.value === pref(RDFS,'nil')) {
+        else if (first[0].object.value === pref(RDF,'nil')) {
             brake = true;
         }
         else {
@@ -364,7 +364,7 @@ function makeList(term: N3.Term, store: N3.Store) : IList {
 
             termList.push(termValue);
 
-            if (rest[0].object.value === pref(RDFS,'nil')) {
+            if (rest[0].object.value === pref(RDF,'nil')) {
                 brake = true;
             }
             else {
