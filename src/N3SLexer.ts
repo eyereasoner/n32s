@@ -11,7 +11,7 @@ const xsd =  {
     string:  `${XSD}string`,
   };
 
-type IN3SToken = {
+export type IN3SToken = {
     type: string;
     value: string;
     prefix: string;
@@ -23,6 +23,7 @@ type IN3SToken = {
 export class N3SLexer {
     _input : string;
     _endOfFile : RegExp;
+    _simpleApostropheString: RegExp;
     _unescapedIri : RegExp;
     _blank : RegExp;
     _boolean : RegExp;
@@ -36,27 +37,34 @@ export class N3SLexer {
     constructor() {
         this._input = "";
         this._line = 0;
-        this._unescapedIri = /^<([^\x00-\x20<>\\"\{\}\|\^\`]*)>[ \t]*/;
-        this._blank = /^_:((?:[0-9A-Z_a-z\xc0-\xd6\xd8-\xf6\xf8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd]|[\ud800-\udb7f][\udc00-\udfff])(?:\.?[\-0-9A-Z_a-z\xb7\xc0-\xd6\xd8-\xf6\xf8-\u037d\u037f-\u1fff\u200c\u200d\u203f\u2040\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd]|[\ud800-\udb7f][\udc00-\udfff])*)(?:[ \t]+|(?=\.?[,;:\s#()\[\]\{\}"'<>]))/;
+        this._simpleApostropheString = /^'([^']+)'/;
+        this._unescapedIri = /^'<([^\x00-\x20<>\\"\{\}\|\^\`]*)>'/;
+        this._blank = /^'_:((?:[0-9A-Z_a-z\xc0-\xd6\xd8-\xf6\xf8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd]|[\ud800-\udb7f][\udc00-\udfff])(?:\.?[\-0-9A-Z_a-z\xb7\xc0-\xd6\xd8-\xf6\xf8-\u037d\u037f-\u1fff\u200c\u200d\u203f\u2040\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd]|[\ud800-\udb7f][\udc00-\udfff])*)(?:[ \t]+|(?=\.?[,;:\s#()\[\]\{\}"'<>]))'/;
         this._literal = /^literal\(([']?[^',]+[']?),'([^']+)'\)/;
         this._endOfFile = /^(?:%[^\n\r]*)?$/;
-        this._boolean = /^(?:true|false)(?=[.,;\s#()\[\]\{\}"'<>])/;
+        this._boolean = /^(?:true|false)/;
         this._newline = /^[ \t]*(?:%[^\n\r]*)?(?:\r\n|\n|\r)[ \t]*/;
         this._comment = /%([^\n\r]*)/;
         this._whitespace = /^[ \t]+/;
         this._comments = true;
     }
 
-    tokenize(input:string) {
+    tokenize(input:string, callback?: (e: Error|null, token: IN3SToken)=>void) {
         this._input = this._readStartingBom(input);
         const tokens : IN3SToken[] = [];
 
-        let error;
-        this._tokenizeToEnd((e: Error|null, t:IN3SToken) => {
-            return e ? (error = e) : tokens.push(t);
-        });
-        if (error) throw error;
-        return tokens;
+        if (callback) {
+            this._tokenizeToEnd(callback);
+            return null;
+        }
+        else {
+            let error;
+            this._tokenizeToEnd((e: Error|null, t:IN3SToken) => {
+                return e ? (error = e) : tokens.push(t);
+            });
+            if (error) throw error;
+            return tokens;
+        }
     }
 
     _readStartingBom(input: string) : string {
@@ -98,19 +106,16 @@ export class N3SLexer {
             }
 
             switch(firstChar) {
-                case '<':
+                case '\'':
                     if (match = this._unescapedIri.exec(input)) {
                         type = 'IRI', value = match[1];
                     }
-                    break;
-                case '_':
-                    if (match = this._blank.exec(input)) {
+                    else if (match = this._blank.exec(input)) {
                         type = 'blank', prefix = '_', value = match[1];
                     }
-                    break;
-                case '.':
-                    matchLength = 1;
-                    type = '.';
+                    else if (match = this._simpleApostropheString.exec(input)) {
+                        type = 'literal' , value = match[1] , prefix = xsd.string;
+                    }
                     break;
                 case 'l':
                     if (match = this._literal.exec(input)) {
@@ -123,10 +128,10 @@ export class N3SLexer {
                         type = 'literal', value = match[0], prefix = xsd.boolean;
                     }
                     break;
-                case '\'':
                 case '(':
                 case ')':
                 case '.':
+                case ',':
                 case '[':
                 case ']':
                     matchLength = 1;
@@ -139,7 +144,7 @@ export class N3SLexer {
 
             const length = matchLength || (match != null ? match[0].length : 0);
 
-            emitToken(type,value,prefix,line,currentLineLength);
+            emitToken(type,value,prefix,line,length);
 
             // Advance to next part to tokenize
             input = input.substr(length, input.length);

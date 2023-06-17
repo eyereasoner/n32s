@@ -16,6 +16,7 @@
   "scripts": {
     "build": "yarn exec tsc",
     "watch": "yarn exec -- tsc --watch",
+    "test": "yarn exec -- mocha --require ts-node/register 'test/**/*.spec.ts'",
     "demo": "node js/index.js data/00-simple.n3"
   },
   "dependencies": {
@@ -23,7 +24,13 @@
     "n3": "^1.16.4"
   },
   "devDependencies": {
+    "@types/expect": "^24.3.0",
+    "@types/mocha": "^10.0.1",
     "@types/n3": "^1.10.4",
+    "expect": "^29.5.0",
+    "mocha": "^10.2.0",
+    "should": "^13.2.3",
+    "ts-node": "^10.9.1",
     "typescript": "^5.1.3"
   }
 }
