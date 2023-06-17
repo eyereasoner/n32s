@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import * as N3 from 'n3';
 import { parseN3File, makeGraph, writeGraph, writeDynamic } from './parser';
+export { parseN3File, makeGraph, writeGraph, writeDynamic } from './parser';
 
 if (process.argv.length != 3) {
     console.log(`usage: ${process.argv[1]} n3-file`);
