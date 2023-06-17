@@ -241,6 +241,24 @@ export function makeGraph(store: N3.Store, graph: N3.Term = N3.DataFactory.defau
         }
     }, null, null, null, graph);
 
+    // Next process all the rest ...
+    store.forEach((quad) => {
+        const termType = '' + quad.subject.termType;
+        if (termType === 'BlankNode' 
+                && isListLike(quad) 
+                && !isGraphLike(quad,graph)) {
+            let subject   = parseTerm(quad.subject, store);
+            let predicate = parseTerm(quad.predicate, store);
+            let object    = parseTerm(quad.object, store);
+            result.value.push({
+                type: 'PSO', 
+                subject: subject,
+                predicate: predicate,
+                object: object
+            } as IPSO);
+        }
+    }, null, null, null, graph);
+
     return result;
 }
 
@@ -314,15 +332,28 @@ function isListLike(quad: N3.Quad) : boolean {
 } 
 
 function isList(term: N3.Term, store: N3.Store) : boolean {
-    const first = store.getQuads(term,pref(RDF,'first'),null,null);
-    const rest = store.getQuads(term,pref(RDF,'rest'),null,null);
+    let searchTerm = term;
+    let brake = false;
+    do {
+        const first = store.getQuads(searchTerm,pref(RDF,'first'),null,null);
+        const rest = store.getQuads(searchTerm,pref(RDF,'rest'),null,null);
 
-    if (first.length == 1 || rest.length == 1) {
-        return true;
-    }
-    else {
-        return false;
-    }
+        if (first.length == 1 && rest.length == 1) {
+            // we are ok
+        }
+        else {
+            return false;
+        }
+
+        if (rest[0].object.value === pref(RDF,'nil')) {
+            brake = true;
+        }
+        else {
+            searchTerm = rest[0].object;
+        }
+    } while (!brake);
+
+    return true;
 }
 
 function isGraph(term: N3.Term, store: N3.Store) : boolean {

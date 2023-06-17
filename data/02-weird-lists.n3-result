@@ -1,0 +1,17 @@
+:- dynamic('<urn:example.org:value>'/2).
+:- dynamic('<http://www.w3.org/1999/02/22-rdf-syntax-ns#next>'/2).
+:- dynamic('<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>'/2).
+:- dynamic('<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>'/2).
+'<urn:example.org:value>'('<urn:example.org:Test1>',[]).
+'<urn:example.org:value>'('<urn:example.org:Test2>',[1,2]).
+'<urn:example.org:value>'('<urn:example.org:Test3>','_:g3').
+'<urn:example.org:value>'('<urn:example.org:Test4>','_:g4').
+'<urn:example.org:value>'('<urn:example.org:Test5>','_:g5').
+'<urn:example.org:value>'('<urn:example.org:Test6>','_:g7').
+'<http://www.w3.org/1999/02/22-rdf-syntax-ns#next>'('_:g7',[]).
+'<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>'('_:g3',2).
+'<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>'('_:g4',[]).
+'<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>'('_:g5',1).
+'<http://www.w3.org/1999/02/22-rdf-syntax-ns#rest>'('_:g5','_:g6').
+'<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>'('_:g7',1).
+'<http://www.w3.org/1999/02/22-rdf-syntax-ns#first>'('_:g7',2).

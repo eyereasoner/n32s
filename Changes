@@ -1,6 +1,8 @@
+2023-06-17 0.0.3
    - Adding dynamics
    - Fixing literals
    - Removing support for ?x variables
+   - Attempt to parse broken lists
 
 2023-06-16 0.0.2
    - Supporting variables
