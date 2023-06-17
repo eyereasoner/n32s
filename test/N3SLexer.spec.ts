@@ -4,7 +4,7 @@ import {expect} from 'expect';
 
 describe('N3SLexer', () => {
   describe('The Lexer export', () => {
-    it('should be an Lexer constructor', () => {
+    it('should be an N3SLexer constructor', () => {
       const lexer = new N3SLexer();
       expect(lexer).not.toBeNull();
     });
@@ -17,14 +17,14 @@ describe('N3SLexer', () => {
                     '',
                     [{ type: 'eof', line: 0 }]));
 
-    it('should tokenize the an IRI',
+    it('should tokenize an IRI',
       shouldTokenize(createLexer(),
                     '\'<urn:foo>\'',
                     [ { type: 'IRI', value: 'urn:foo', line: 0 } ,
                       { type: 'eof', line: 0 }
                     ]));
 
-    it('should tokenize the a blank node',
+    it('should tokenize a blank node',
       shouldTokenize(createLexer(),
                     '\'_:X\'',
                     [ { type: 'blank', value: 'X', prefix: '_' , line: 0 } ,
@@ -45,21 +45,44 @@ describe('N3SLexer', () => {
                       { type: 'eof', line: 0 }
                     ]));
 
-    it('should tokenize the a string value',
+    it('should tokenize a string value',
       shouldTokenize(createLexer(),
                     '\'a string\'',
                     [ { type: 'literal', value: 'a string', prefix: 'http://www.w3.org/2001/XMLSchema#string' , line: 0 } ,
                       { type: 'eof', line: 0 }
                     ]));
 
-    it('should tokenize the a literal value',
+    it('should tokenize an integer value',
+      shouldTokenize(createLexer(),
+                    '42',
+                    [ { type: 'literal', value: '42', prefix: 'http://www.w3.org/2001/XMLSchema#integer' , line: 0 } ,
+                      { type: 'eof', line: 0 }
+                    ]));
+
+    it('should tokenize a negative integer value',
+      shouldTokenize(createLexer(),
+                    '-42',
+                    [ { type: 'literal', value: '-42', prefix: 'http://www.w3.org/2001/XMLSchema#integer' , line: 0 } ,
+                      { type: 'eof', line: 0 }
+                    ]));
+
+
+    it('should tokenize a decimal value',
+      shouldTokenize(createLexer(),
+                    '42.1',
+                    [ { type: 'literal', value: '42.1', prefix: 'http://www.w3.org/2001/XMLSchema#decimal' , line: 0 } ,
+                      { type: 'eof', line: 0 }
+                    ]));
+
+
+    it('should tokenize a literal value',
       shouldTokenize(createLexer(),
                     'literal(42,\'http://www.w3.org/2001/XMLSchema#integer\')',
                     [ { type: 'literal', value: '42', prefix: 'http://www.w3.org/2001/XMLSchema#integer' , line: 0 } ,
                       { type: 'eof', line: 0 }
                     ]));
 
-    it('should tokenize the a list value',
+    it('should tokenize a list value',
       shouldTokenize(createLexer(),
                     '[\'_:x\',\'_:y\']',
                     [ { type: '[', line: 0 } ,
@@ -70,7 +93,7 @@ describe('N3SLexer', () => {
                       { type: 'eof', line: 0 }
                     ]));
 
-    it('should tokenize the a conjunction value',
+    it('should tokenize a conjunction value',
       shouldTokenize(createLexer(),
                     '(\'_:x\',\'_:y\')',
                     [ { type: '(', line: 0 } ,

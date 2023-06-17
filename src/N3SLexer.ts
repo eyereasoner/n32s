@@ -1,7 +1,4 @@
-const 
-    RDF  = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-    XSD  = 'http://www.w3.org/2001/XMLSchema#',
-    SWAP = 'http://www.w3.org/2000/10/swap/';
+const XSD  = 'http://www.w3.org/2001/XMLSchema#';
 
 const xsd =  {
     decimal: `${XSD}decimal`,
@@ -28,6 +25,7 @@ export class N3SLexer {
     _blank : RegExp;
     _boolean : RegExp;
     _literal : RegExp;
+    _number : RegExp;
     _newline : RegExp;
     _comment : RegExp;
     _whitespace : RegExp;
@@ -41,6 +39,7 @@ export class N3SLexer {
         this._unescapedIri = /^'<([^\x00-\x20<>\\"\{\}\|\^\`]*)>'/;
         this._blank = /^'_:((?:[0-9A-Z_a-z\xc0-\xd6\xd8-\xf6\xf8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd]|[\ud800-\udb7f][\udc00-\udfff])(?:\.?[\-0-9A-Z_a-z\xb7\xc0-\xd6\xd8-\xf6\xf8-\u037d\u037f-\u1fff\u200c\u200d\u203f\u2040\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd]|[\ud800-\udb7f][\udc00-\udfff])*)(?:[ \t]+|(?=\.?[,;:\s#()\[\]\{\}"'<>]))'/;
         this._literal = /^literal\(([']?[^',]+[']?),'([^']+)'\)/;
+        this._number = /^[\-+]?(?:(\d+\.\d*|\.?\d+)[eE][\-+]?|\d*(\.)?)\d+/;
         this._endOfFile = /^(?:%[^\n\r]*)?$/;
         this._boolean = /^(?:true|false)/;
         this._newline = /^[ \t]*(?:%[^\n\r]*)?(?:\r\n|\n|\r)[ \t]*/;
@@ -126,6 +125,27 @@ export class N3SLexer {
                 case 't':
                     if (match = this._boolean.exec(input)) {
                         type = 'literal', value = match[0], prefix = xsd.boolean;
+                    }
+                    break;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                case '+':
+                case '-':
+                    // Try to find a number. Since it can contain (but not end with) a dot,
+                    // we always need a non-dot character before deciding it is a number.
+                    // Therefore, try inserting a space if we're at the end of the input.
+                    if (match = this._number.exec(input)) {
+                        type = 'literal', value = match[0];
+                        prefix = (typeof match[1] === 'string' ? xsd.double :
+                        (typeof match[2] === 'string' ? xsd.decimal : xsd.integer));
                     }
                     break;
                 case '(':
