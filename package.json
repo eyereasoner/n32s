@@ -15,6 +15,7 @@
   },
   "scripts": {
     "build": "yarn exec tsc",
+    "watch": "yarn exec -- tsc --watch",
     "demo": "node js/index.js data/00-simple.n3"
   },
   "dependencies": {

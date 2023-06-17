@@ -1,0 +1,30 @@
+@prefix : <urn:example.org:> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+:Test1 :value rdf:nil .
+
+:Test2 :value _:g1 .
+
+_:g1 rdf:first 1 ;
+     rdf:rest _:g2 .
+
+_:g2 rdf:first 2 ;
+     rdf:rest rdf:nil .
+
+:Test3 :value _:g3 .
+
+_:g3 rdf:first 2 .
+
+:Test4 :value _:g4 .
+
+_:g4 rdf:rest rdf:nil .
+
+:Test5 :value _:g5 .
+
+_:g5 rdf:first 1 ;
+     rdf:rest _:g6 .
+
+:Test6 :value _:g7 .
+
+_:g7 rdf:first 1 , 2 ;
+     rdf:next rdf:nil .

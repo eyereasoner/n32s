@@ -1,5 +1,4 @@
 @prefix : <urn:example.org:> .
-@prefix log: <http://www.w3.org/2000/10/swap/log#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 :test :is :Person .
@@ -9,7 +8,7 @@
 :test :is 123 .
 :test :is "3.14"^^xsd:float .
 :test :is _:x .
-:test :is ?x .
+#:test :is ?x . # NOT SUPPORTED
 
 :Person :is :test .
 true :is :test .
@@ -18,7 +17,7 @@ false :is :test .
 123 :is :test .
 "3.14"^^xsd:float :is :test .
 _:x :is :test .
-?x :is :test .
+# ?x :is :test . # NOT SUPPORTED
 
 :is :Person :test .
 #:is true :test . # see https://github.com/rdfjs/N3.js/issues/328
@@ -26,8 +25,8 @@ _:x :is :test .
 #:is "blue ball"^^xsd:string :test .
 #:is 123 :test . 
 #:is "3.14"^^xsd:string :test .
-#:is _:x :test . # NOT SUPPORTED YET
-#:is ?x :test.  # NOT SUPPORTED YE
+:is _:x :test . 
+#:is ?x :test.  # NOT SUPPORTED 
 
 :test :is () .
 :test :is ( :Red :Green :Blue ) .
@@ -44,5 +43,3 @@ _:x :is :test .
 :test :is { :a :b :c } .
 { :a :b :c } :is :test .
 # :is { :a :b :c } :test . # not supported in n3
-
-{ :a :b ?x } :is { ?x :d :e } .

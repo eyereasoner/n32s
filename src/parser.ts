@@ -2,8 +2,8 @@ import * as N3 from 'n3';
 import * as fs from 'fs';
 import { getLogger } from "log4js";
 
-const XSD  = 'http://www.w3.org/2001/XMLSchema#';
-const RDFS = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+const XSD = 'http://www.w3.org/2001/XMLSchema#';
+const RDF = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
 
 const logger = getLogger();
 
@@ -59,26 +59,25 @@ export async function parseN3File(file: string) : Promise<N3.Store> {
 }
 
 export async function parseN3(n3: string) : Promise<N3.Store> {
-    const parser = new N3.Parser({ format: 'text/n3' });
+    return new Promise<N3.Store>( (resolve,reject) => {
+        const parser = new N3.Parser({ format: 'text/n3' });
+        const store  = new N3.Store(); 
 
-    const store  = new N3.Store(); 
+        parser.parse(n3,
+            (error, quad, _prefixes) => {
+                if (error) {
+                    reject(error.message);
+                }
 
-    parser.parse(n3,
-        (error, quad, _prefixes) => {
-            if (error) {
-                throw new Error(error.message);
+                if (quad) {
+                    store.add(quad)
+                }
+                else {
+                    resolve(store);
+                }
             }
-
-            if (quad) {
-                store.add(quad)
-            }
-            else {
-                // We are done with parsing
-            }
-        }
-    );
-
-    return store;
+        );
+    });
 }
 
 export function serializeN3Store(store: N3.Store) : void {
@@ -94,6 +93,41 @@ export function serializeN3Store(store: N3.Store) : void {
 
 function pref(type: string, value: string) : string {
     return type + value;
+}
+
+export function writeDynamic(graph: IGraph, except: string[] = []) : string {
+    const dynamicTerms = new Set<string>();
+
+    graph.value.forEach( (pso) => {
+        const dynamicPredicates = scanDynamicTerm(pso.predicate);
+        dynamicPredicates.forEach( (dyn) => dynamicTerms.add(dyn) );
+    });
+
+    return  Array.from(dynamicTerms)
+                 .filter( (dyn) => {
+                    return ! except.includes(dyn);
+                 })
+                 .map( (dyn) => {
+                        return `:- dynamic('<${dyn}>'/2).`;
+                 }).join("\n");
+}
+
+function scanDynamicTerm(term: ITerm) : string[] {
+    if (term.type === 'NamedNode') {
+        return [term.value];
+    }
+    else if (term.type === 'Graph') {
+        const result : string[] = [];
+        term.value.forEach( (gi) => {
+            const dynamicTermsP = scanDynamicTerm(gi.predicate);
+            dynamicTermsP.forEach( (dyn) => result.push(dyn));
+        });
+
+        return result;
+    }
+    else {
+        return [];
+    }
 }
 
 export function writeGraph(graph: IGraph) : string {
@@ -130,7 +164,7 @@ function writeTerm(term: ITerm) : string {
             return term.value;
         }
         else {
-            return `literal('${term.value},'${term.datatype})`;
+            return `literal('${term.value}','${term.datatype}')`;
         }
     }
     else if (term.type === 'BlankNode') {
@@ -166,10 +200,16 @@ export function makeGraph(store: N3.Store, graph: N3.Term = N3.DataFactory.defau
         datatype: null
     };
 
-    // First process the named nodes...
+    // First process the named nodes and literals...
     store.forEach((quad) => {
         const termType = '' + quad.subject.termType;
-        if ((termType === 'NamedNode' || termType === 'Literal' || termType === 'Variable')
+
+        if (termType === 'Variable') {
+            console.error(quad);
+            throw new Error(`Variables are not supported in N3S!`);
+        }
+
+        if ((termType === 'NamedNode' || termType === 'Literal')
                 && !isGraphLike(quad,graph)) {
             let subject   = parseTerm(quad.subject, store);
             let predicate = parseTerm(quad.predicate, store);
@@ -201,12 +241,30 @@ export function makeGraph(store: N3.Store, graph: N3.Term = N3.DataFactory.defau
         }
     }, null, null, null, graph);
 
+    // Next process all the rest ...
+    store.forEach((quad) => {
+        const termType = '' + quad.subject.termType;
+        if (termType === 'BlankNode' 
+                && isListLike(quad) 
+                && !isGraphLike(quad,graph)) {
+            let subject   = parseTerm(quad.subject, store);
+            let predicate = parseTerm(quad.predicate, store);
+            let object    = parseTerm(quad.object, store);
+            result.value.push({
+                type: 'PSO', 
+                subject: subject,
+                predicate: predicate,
+                object: object
+            } as IPSO);
+        }
+    }, null, null, null, graph);
+
     return result;
 }
 
 function parseTerm(term: N3.Term, store: N3.Store) : ITerm {
     if (term.termType === 'NamedNode') {
-        if (term.value === pref(RDFS,'nil')) {
+        if (term.value === pref(RDF,'nil')) {
             return { type: 'List' , value: [] as ITerm[] } as IList;
         }
         else {
@@ -264,8 +322,8 @@ function isGraphLike(quad: N3.Quad, graph: N3.Term) : boolean {
 }
 
 function isListLike(quad: N3.Quad) : boolean {
-    if (quad.predicate.value === pref(RDFS,'first') ||
-        quad.predicate.value === pref(RDFS,'rest')) {
+    if (quad.predicate.value === pref(RDF,'first') ||
+        quad.predicate.value === pref(RDF,'rest')) {
         return true;
     }
     else {
@@ -274,15 +332,28 @@ function isListLike(quad: N3.Quad) : boolean {
 } 
 
 function isList(term: N3.Term, store: N3.Store) : boolean {
-    const first = store.getQuads(term,pref(RDFS,'first'),null,null);
-    const rest = store.getQuads(term,pref(RDFS,'rest'),null,null);
+    let searchTerm = term;
+    let brake = false;
+    do {
+        const first = store.getQuads(searchTerm,pref(RDF,'first'),null,null);
+        const rest = store.getQuads(searchTerm,pref(RDF,'rest'),null,null);
 
-    if (first.length == 1 || rest.length == 1) {
-        return true;
-    }
-    else {
-        return false;
-    }
+        if (first.length == 1 && rest.length == 1) {
+            // we are ok
+        }
+        else {
+            return false;
+        }
+
+        if (rest[0].object.value === pref(RDF,'nil')) {
+            brake = true;
+        }
+        else {
+            searchTerm = rest[0].object;
+        }
+    } while (!brake);
+
+    return true;
 }
 
 function isGraph(term: N3.Term, store: N3.Store) : boolean {
@@ -302,8 +373,8 @@ function makeList(term: N3.Term, store: N3.Store) : IList {
     let brake = false;
 
     do {
-        const first = store.getQuads(searchTerm,pref(RDFS,'first'),null,null);
-        const rest  = store.getQuads(searchTerm,pref(RDFS,'rest'),null,null);
+        const first = store.getQuads(searchTerm,pref(RDF,'first'),null,null);
+        const rest  = store.getQuads(searchTerm,pref(RDF,'rest'),null,null);
 
         if (first.length == 0) {
             if (rest.length == 0 || rest.length != 1) {
@@ -316,7 +387,7 @@ function makeList(term: N3.Term, store: N3.Store) : IList {
         else if (first.length != 1 || rest.length != 1) {
             brake = true;
         } 
-        else if (first[0].object.value === pref(RDFS,'nil')) {
+        else if (first[0].object.value === pref(RDF,'nil')) {
             brake = true;
         }
         else {
@@ -324,7 +395,7 @@ function makeList(term: N3.Term, store: N3.Store) : IList {
 
             termList.push(termValue);
 
-            if (rest[0].object.value === pref(RDFS,'nil')) {
+            if (rest[0].object.value === pref(RDF,'nil')) {
                 brake = true;
             }
             else {

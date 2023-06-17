@@ -1,26 +1,26 @@
+:- dynamic('<urn:example.org:is>'/2).
+:- dynamic('<urn:example.org:Person>'/2).
 '<urn:example.org:is>'('<urn:example.org:test>','<urn:example.org:Person>').
 '<urn:example.org:is>'('<urn:example.org:test>',true).
 '<urn:example.org:is>'('<urn:example.org:test>',false).
 '<urn:example.org:is>'('<urn:example.org:test>','blue ball').
 '<urn:example.org:is>'('<urn:example.org:test>',123).
-'<urn:example.org:is>'('<urn:example.org:test>',literal('3.14,'http://www.w3.org/2001/XMLSchema#float)).
+'<urn:example.org:is>'('<urn:example.org:test>',literal('3.14','http://www.w3.org/2001/XMLSchema#float')).
 '<urn:example.org:is>'('<urn:example.org:test>','_:x').
-'<urn:example.org:is>'('<urn:example.org:test>',x).
 '<urn:example.org:is>'('<urn:example.org:test>',[]).
 '<urn:example.org:is>'('<urn:example.org:test>',['<urn:example.org:Red>','<urn:example.org:Green>','<urn:example.org:Blue>']).
 '<urn:example.org:is>'('<urn:example.org:test>',['<urn:example.org:Red>',['<urn:example.org:Green>',123],'<urn:example.org:Blue>']).
 '<urn:example.org:is>'('<urn:example.org:test>',('<urn:example.org:b>'('<urn:example.org:a>','<urn:example.org:c>'))).
 '<urn:example.org:Person>'('<urn:example.org:is>','<urn:example.org:test>').
+'_:x'('<urn:example.org:is>','<urn:example.org:test>').
 '<urn:example.org:is>'('<urn:example.org:Person>','<urn:example.org:test>').
 '<urn:example.org:is>'(true,'<urn:example.org:test>').
 '<urn:example.org:is>'(false,'<urn:example.org:test>').
 '<urn:example.org:is>'('blue ball','<urn:example.org:test>').
 '<urn:example.org:is>'(123,'<urn:example.org:test>').
-'<urn:example.org:is>'(literal('3.14,'http://www.w3.org/2001/XMLSchema#float),'<urn:example.org:test>').
-'<urn:example.org:is>'(x,'<urn:example.org:test>').
+'<urn:example.org:is>'(literal('3.14','http://www.w3.org/2001/XMLSchema#float'),'<urn:example.org:test>').
 '<urn:example.org:is>'([],'<urn:example.org:test>').
 '<urn:example.org:is>'('_:x','<urn:example.org:test>').
 '<urn:example.org:is>'(['<urn:example.org:Red>','<urn:example.org:Green>','<urn:example.org:Blue>'],'<urn:example.org:test>').
 '<urn:example.org:is>'(['<urn:example.org:Red>',['<urn:example.org:Green>',123],'<urn:example.org:Blue>'],'<urn:example.org:test>').
 '<urn:example.org:is>'(('<urn:example.org:b>'('<urn:example.org:a>','<urn:example.org:c>')),'<urn:example.org:test>').
-'<urn:example.org:is>'(('<urn:example.org:b>'('<urn:example.org:a>',x)),('<urn:example.org:d>'(x,'<urn:example.org:e>'))).
