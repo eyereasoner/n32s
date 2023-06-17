@@ -22,12 +22,26 @@ const knownPredicates = [
 main(input);
 
 async function main(path: string) : Promise<void> {
-    const store = await parseN3File(path);
-    const graph = makeGraph(store);
-    const dynamic = writeDynamic(graph, knownPredicates);
-    const n3s = writeGraph(graph);
-    if (dynamic.length) {
-        console.log(dynamic);
+    let store;
+    try {
+        store = await parseN3File(path);
+    } 
+    catch (e) {
+        console.error(e);
+        process.exit(2);
     }
-    console.log(n3s);
+
+    try {
+        const graph = makeGraph(store);
+        const dynamic = writeDynamic(graph, knownPredicates);
+        const n3s = writeGraph(graph);
+        if (dynamic.length) {
+            console.log(dynamic);
+        }
+        console.log(n3s);
+    }
+    catch (e) {
+        console.error((e as Error).message);
+        process.exit(3);
+    }
 }

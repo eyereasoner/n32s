@@ -13,6 +13,7 @@
 '<urn:example.org:is>'('<urn:example.org:test>',['<urn:example.org:Red>',['<urn:example.org:Green>',123],'<urn:example.org:Blue>']).
 '<urn:example.org:is>'('<urn:example.org:test>',('<urn:example.org:b>'('<urn:example.org:a>','<urn:example.org:c>'))).
 '<urn:example.org:Person>'('<urn:example.org:is>','<urn:example.org:test>').
+'_:x'('<urn:example.org:is>','<urn:example.org:test>').
 '<urn:example.org:is>'('<urn:example.org:Person>','<urn:example.org:test>').
 '<urn:example.org:is>'(true,'<urn:example.org:test>').
 '<urn:example.org:is>'(false,'<urn:example.org:test>').

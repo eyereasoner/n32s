@@ -59,26 +59,25 @@ export async function parseN3File(file: string) : Promise<N3.Store> {
 }
 
 export async function parseN3(n3: string) : Promise<N3.Store> {
-    const parser = new N3.Parser({ format: 'text/n3' });
+    return new Promise<N3.Store>( (resolve,reject) => {
+        const parser = new N3.Parser({ format: 'text/n3' });
+        const store  = new N3.Store(); 
 
-    const store  = new N3.Store(); 
+        parser.parse(n3,
+            (error, quad, _prefixes) => {
+                if (error) {
+                    reject(error.message);
+                }
 
-    parser.parse(n3,
-        (error, quad, _prefixes) => {
-            if (error) {
-                throw new Error(error.message);
+                if (quad) {
+                    store.add(quad)
+                }
+                else {
+                    resolve(store);
+                }
             }
-
-            if (quad) {
-                store.add(quad)
-            }
-            else {
-                // We are done with parsing
-            }
-        }
-    );
-
-    return store;
+        );
+    });
 }
 
 export function serializeN3Store(store: N3.Store) : void {
@@ -204,7 +203,13 @@ export function makeGraph(store: N3.Store, graph: N3.Term = N3.DataFactory.defau
     // First process the named nodes...
     store.forEach((quad) => {
         const termType = '' + quad.subject.termType;
-        if ((termType === 'NamedNode' || termType === 'Literal' || termType === 'Variable')
+
+        if (termType === 'Variable') {
+            console.error(quad);
+            throw new Error(`Variables are not supported in N3S!`);
+        }
+
+        if ((termType === 'NamedNode' || termType === 'Literal')
                 && !isGraphLike(quad,graph)) {
             let subject   = parseTerm(quad.subject, store);
             let predicate = parseTerm(quad.predicate, store);

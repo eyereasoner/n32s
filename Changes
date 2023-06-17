@@ -1,5 +1,6 @@
    - Adding dynamics
    - Fixing literals
+   - Removing support for ?x variables
 
 2023-06-16 0.0.2
    - Supporting variables
