@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { parseN3File, makeGraph, writeGraph, writeDynamic } from './N3Parser';
-export { parseN3File, makeGraph, writeGraph, writeDynamic } from './N3Parser';
+import { N3Parser } from './N3Parser';
+export { N3Parser } from './N3Parser';
 
 if (process.argv.length != 3) {
     console.log(`usage: ${process.argv[1]} n3-file`);
@@ -18,22 +18,10 @@ const knownPredicates = [
 main(input);
 
 async function main(path: string) : Promise<void> {
-    let store;
     try {
-        store = await parseN3File(path);
-    } 
-    catch (e) {
-        console.error(e);
-        process.exit(2);
-    }
-
-    try {
-        const graph = makeGraph(store);
-        const dynamic = writeDynamic(graph, knownPredicates);
-        const n3s = writeGraph(graph);
-        if (dynamic.length) {
-            console.log(dynamic);
-        }
+        const parser = new N3Parser({});
+        const graph = await parser.parse(path);
+        const n3s = parser.asN3S(graph, knownPredicates);
         console.log(n3s);
     }
     catch (e) {

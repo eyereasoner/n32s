@@ -1,4 +1,4 @@
-import { parseN3, makeGraph, writeGraph } from '../src/N3Parser';
+import { N3Parser } from '../src/N3Parser';
 
 import {expect} from 'expect';
 
@@ -87,8 +87,8 @@ function shouldParse(input:string,expected:string) {
     };
 }
 async function makeN3S(input: string) : Promise<string> {
-    const store = await parseN3(input);
-    const graph = makeGraph(store);
-    const n3s = writeGraph(graph);
+    const parser = new N3Parser({ dynamics: false });
+    const graph = await parser.parse(input);
+    const n3s = parser.asN3S(graph);
     return n3s;
 }
