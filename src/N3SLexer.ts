@@ -1,6 +1,6 @@
-const XSD  = 'http://www.w3.org/2001/XMLSchema#';
+export const XSD  = 'http://www.w3.org/2001/XMLSchema#';
 
-const xsd =  {
+export const xsd =  {
     decimal: `${XSD}decimal`,
     boolean: `${XSD}boolean`,
     double:  `${XSD}double`,
@@ -18,53 +18,53 @@ export type IN3SToken = {
 };
 
 export class N3SLexer {
-    _input : string;
-    _endOfFile : RegExp;
-    _simpleApostropheString: RegExp;
-    _unescapedIri : RegExp;
-    _blank : RegExp;
-    _boolean : RegExp;
-    _literal : RegExp;
-    _number : RegExp;
-    _newline : RegExp;
-    _comment : RegExp;
-    _whitespace : RegExp;
-    _directive: RegExp;
-    _line : number;
-    _comments : boolean;
+    private input : string;
+    private endOfFile : RegExp;
+    private simpleApostropheString: RegExp;
+    private unescapedIri : RegExp;
+    private blank : RegExp;
+    private boolean : RegExp;
+    private literal : RegExp;
+    private number : RegExp;
+    private newline : RegExp;
+    private comment : RegExp;
+    private whitespace : RegExp;
+    private directive: RegExp;
+    private line : number;
+    private comments : boolean;
 
     constructor(options?: any) {
-        this._input = "";
-        this._line = 0;
-        this._simpleApostropheString = /^'([^']+)'/;
-        this._unescapedIri = /^'<([^\x00-\x20<>\\"\{\}\|\^\`]*)>'/;
-        this._blank = /^'_:((?:[0-9A-Z_a-z\xc0-\xd6\xd8-\xf6\xf8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd]|[\ud800-\udb7f][\udc00-\udfff])(?:\.?[\-0-9A-Z_a-z\xb7\xc0-\xd6\xd8-\xf6\xf8-\u037d\u037f-\u1fff\u200c\u200d\u203f\u2040\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd]|[\ud800-\udb7f][\udc00-\udfff])*)(?:[ \t]+|(?=\.?[,;:\s#()\[\]\{\}"'<>]))'/;
-        this._literal = /^literal\(([']?[^',]+[']?),'([^']+)'\)/;
-        this._number = /^[\-+]?(?:(\d+\.\d*|\.?\d+)[eE][\-+]?|\d*(\.)?)\d+/;
-        this._endOfFile = /^(?:%[^\n\r]*)?$/;
-        this._boolean = /^(?:true|false)/;
-        this._newline = /^[ \t]*(?:%[^\n\r]*)?(?:\r\n|\n|\r)[ \t]*/;
-        this._comment = /^%([^\n\r]*)/;
-        this._directive = /^:-[ \t]*([^\n\r]*)/;
-        this._whitespace = /^[ \t]+/;
-        this._comments = false;
+        this.input = "";
+        this.line = 0;
+        this.simpleApostropheString = /^'([^']+)'/;
+        this.unescapedIri = /^'<([^\x00-\x20<>\\"\{\}\|\^\`]*)>'/;
+        this.blank = /^'_:((?:[0-9A-Z_a-z\xc0-\xd6\xd8-\xf6\xf8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd]|[\ud800-\udb7f][\udc00-\udfff])(?:\.?[\-0-9A-Z_a-z\xb7\xc0-\xd6\xd8-\xf6\xf8-\u037d\u037f-\u1fff\u200c\u200d\u203f\u2040\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd]|[\ud800-\udb7f][\udc00-\udfff])*)(?:[ \t]+|(?=\.?[,;:\s#()\[\]\{\}"'<>]))'/;
+        this.literal = /^literal\(([']?[^',]+[']?),'([^']+)'\)/;
+        this.number = /^[\-+]?(?:(\d+\.\d*|\.?\d+)[eE][\-+]?|\d*(\.)?)\d+/;
+        this.endOfFile = /^(?:%[^\n\r]*)?$/;
+        this.boolean = /^(?:true|false)/;
+        this.newline = /^[ \t]*(?:%[^\n\r]*)?(?:\r\n|\n|\r)[ \t]*/;
+        this.comment = /^%([^\n\r]*)/;
+        this.directive = /^:-[ \t]*([^\n\r]*)/;
+        this.whitespace = /^[ \t]+/;
+        this.comments = false;
 
         if (options?.comments) {
-            this._comments = true;
+            this.comments = true;
         }
     }
 
-    tokenize(input:string, callback?: (e: Error|null, token: IN3SToken)=>void) {
-        this._input = this._readStartingBom(input);
+    public tokenize(input:string, callback?: (e: Error|null, token: IN3SToken)=>void) {
+        this.input = this.readStartingBom(input);
         const tokens : IN3SToken[] = [];
 
         if (callback) {
-            this._tokenizeToEnd(callback);
+            this.tokenizeToEnd(callback);
             return null;
         }
         else {
             let error;
-            this._tokenizeToEnd((e: Error|null, t:IN3SToken) => {
+            this.tokenizeToEnd((e: Error|null, t:IN3SToken) => {
                 return e ? (error = e) : tokens.push(t);
             });
             if (error) throw error;
@@ -72,69 +72,69 @@ export class N3SLexer {
         }
     }
 
-    _readStartingBom(input: string) : string {
+    private readStartingBom(input: string) : string {
         return input.startsWith('\ufeff') ? input.substr(1) : input;
     }
 
-    _tokenizeToEnd(callback: (e:Error|null,t:IN3SToken)=>void) : void {
-        let input = this._input;
+    private tokenizeToEnd(callback: (e:Error|null,t:IN3SToken)=>void) : void {
+        let input = this.input;
         let currentLineLength = input.length;
 
         while (true) {
             // Count and skip whitespace lines
             let whiteSpaceMatch, comment;
 
-            while (whiteSpaceMatch = this._newline.exec(input)) {
+            while (whiteSpaceMatch = this.newline.exec(input)) {
                 // Try to find a comment
-                if (this._comments && (comment = this._comment.exec(whiteSpaceMatch[0]))) {
-                  emitToken('comment', comment[1], '', this._line, whiteSpaceMatch[0].length);
+                if (this.comments && (comment = this.comment.exec(whiteSpaceMatch[0]))) {
+                  emitToken('comment', comment[1], '', this.line, whiteSpaceMatch[0].length);
                 }
                 // Advance the input
                 input = input.substr(whiteSpaceMatch[0].length, input.length);
                 currentLineLength = input.length;
-                this._line++;
+                this.line++;
             }
 
             // Skip whitespace on current line
-            if (!whiteSpaceMatch && (whiteSpaceMatch = this._whitespace.exec(input))) {
+            if (!whiteSpaceMatch && (whiteSpaceMatch = this.whitespace.exec(input))) {
                 input = input.substr(whiteSpaceMatch[0].length, input.length);
             }
 
-            const line = this._line, firstChar = input[0];
+            const line = this.line, firstChar = input[0];
 
             let type = '', value = '', prefix = '',
                 match = null, matchLength = 0;
 
-            if (this._endOfFile.test(input)) {
-                emitToken('eof', '', '', this._line, 0);
+            if (this.endOfFile.test(input)) {
+                emitToken('eof', '', '', this.line, 0);
                 return;
             }
 
             switch(firstChar) {
                 case ':':
-                    if (match = this._directive.exec(input)) {
+                    if (match = this.directive.exec(input)) {
                         type = 'directive', value = match[1];
                     }
                     break;
                 case '\'':
-                    if (match = this._unescapedIri.exec(input)) {
+                    if (match = this.unescapedIri.exec(input)) {
                         type = 'IRI', value = match[1];
                     }
-                    else if (match = this._blank.exec(input)) {
+                    else if (match = this.blank.exec(input)) {
                         type = 'blank', prefix = '_', value = match[1];
                     }
-                    else if (match = this._simpleApostropheString.exec(input)) {
+                    else if (match = this.simpleApostropheString.exec(input)) {
                         type = 'literal' , value = match[1] , prefix = xsd.string;
                     }
                     break;
                 case 'l':
-                    if (match = this._literal.exec(input)) {
+                    if (match = this.literal.exec(input)) {
                         type = 'literal', value = match[1], prefix = match[2];
                     }
                     break;
                 case 'f':
                 case 't':
-                    if (match = this._boolean.exec(input)) {
+                    if (match = this.boolean.exec(input)) {
                         type = 'literal', value = match[0], prefix = xsd.boolean;
                     }
                     break;
@@ -153,7 +153,7 @@ export class N3SLexer {
                     // Try to find a number. Since it can contain (but not end with) a dot,
                     // we always need a non-dot character before deciding it is a number.
                     // Therefore, try inserting a space if we're at the end of the input.
-                    if (match = this._number.exec(input)) {
+                    if (match = this.number.exec(input)) {
                         type = 'literal', value = match[0];
                         prefix = (typeof match[1] === 'string' ? xsd.double :
                         (typeof match[2] === 'string' ? xsd.decimal : xsd.integer));
@@ -176,7 +176,7 @@ export class N3SLexer {
             if (!type) {
                 return reportSyntaxError(this);
             }
-            
+
             const length = matchLength || (match != null ? match[0].length : 0);
 
             emitToken(type,value,prefix,line,length);
@@ -194,14 +194,14 @@ export class N3SLexer {
 
         function reportSyntaxError(self: N3SLexer) { 
             let match = /^\S*/.exec(input);
-            callback(self._syntaxError(match ? match[0] : ''),{} as IN3SToken); 
+            callback(self.syntaxError(match ? match[0] : ''),{} as IN3SToken); 
         }
     }
 
-    // ### `_syntaxError` creates a syntax error for the given issue
-    _syntaxError(issue: string) {
-        this._input = '';
-        const err = new Error(`Unexpected "${issue}" on line ${this._line}.`);
+    // ### `syntaxError` creates a syntax error for the given issue
+    private syntaxError(issue: string) {
+        this.input = '';
+        const err = new Error(`Unexpected "${issue}" on line ${this.line}.`);
         return err;
     }
 }
