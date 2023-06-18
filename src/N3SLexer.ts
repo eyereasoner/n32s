@@ -29,6 +29,7 @@ export class N3SLexer {
     _newline : RegExp;
     _comment : RegExp;
     _whitespace : RegExp;
+    _directive: RegExp;
     _line : number;
     _comments : boolean;
 
@@ -43,7 +44,8 @@ export class N3SLexer {
         this._endOfFile = /^(?:%[^\n\r]*)?$/;
         this._boolean = /^(?:true|false)/;
         this._newline = /^[ \t]*(?:%[^\n\r]*)?(?:\r\n|\n|\r)[ \t]*/;
-        this._comment = /%([^\n\r]*)/;
+        this._comment = /^%([^\n\r]*)/;
+        this._directive = /^:-[ \t]*([^\n\r]*)/;
         this._whitespace = /^[ \t]+/;
         this._comments = true;
     }
@@ -105,6 +107,11 @@ export class N3SLexer {
             }
 
             switch(firstChar) {
+                case ':':
+                    if (match = this._directive.exec(input)) {
+                        type = 'directive', value = match[1];
+                    }
+                    break;
                 case '\'':
                     if (match = this._unescapedIri.exec(input)) {
                         type = 'IRI', value = match[1];

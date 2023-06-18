@@ -3,14 +3,14 @@ import * as should from 'should';
 import {expect} from 'expect';
 
 describe('N3SLexer', () => {
-  describe('The Lexer export', () => {
+  describe('The N3SLexer export', () => {
     it('should be an N3SLexer constructor', () => {
       const lexer = new N3SLexer();
       expect(lexer).not.toBeNull();
     });
   });
 
-  describe('A Lexer instance', () => {
+  describe('A N3SLexer instance', () => {
     function createLexer() { return new N3SLexer(); }
     it('should tokenize the empty string',
       shouldTokenize(createLexer(),
@@ -66,14 +66,12 @@ describe('N3SLexer', () => {
                       { type: 'eof', line: 0 }
                     ]));
 
-
     it('should tokenize a decimal value',
       shouldTokenize(createLexer(),
                     '42.1',
                     [ { type: 'literal', value: '42.1', prefix: 'http://www.w3.org/2001/XMLSchema#decimal' , line: 0 } ,
                       { type: 'eof', line: 0 }
                     ]));
-
 
     it('should tokenize a literal value',
       shouldTokenize(createLexer(),
@@ -102,6 +100,20 @@ describe('N3SLexer', () => {
                       { type: 'blank', value: 'y', prefix: '_' , line: 0 } ,
                       { type: ')', line: 0 } ,
                       { type: 'eof', line: 0 }
+                    ]));
+
+    it('should tokenize a directive',
+      shouldTokenize(createLexer(),
+                    ':- dynamic(\'<urn:example.org:value>\'/2).',
+                    [ { type: 'directive', line: 0 , value: 'dynamic(\'<urn:example.org:value>\'/2).'} ,
+                      { type: 'eof', line: 0 }
+                    ]));
+
+    it('should tokenize a comment',
+      shouldTokenize(createLexer(),
+                    "% a comment\n",
+                    [ { type: 'comment', line: 0 , value: ' a comment'} ,
+                      { type: 'eof', line: 1 }
                     ]));
 
     it('should tokenize the end of term',
