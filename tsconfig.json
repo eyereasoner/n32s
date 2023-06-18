@@ -8,7 +8,7 @@
     "outDir": "js",
     "rootDir": "src",
     "strict": true,
-    "types": ["node"],
+    "types": ["node","mocha"],
     "esModuleInterop": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,

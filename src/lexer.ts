@@ -1,5 +1,3 @@
-import * as N3 from 'n3';
-import { N3SLexer } from './N3SLexer';
 import { N3SParser } from './N3SParser';
 
 main();

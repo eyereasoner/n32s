@@ -1,5 +1,4 @@
-import { N3SLexer , IN3SToken }  from '../src/N3SLexer';
-import * as should from 'should';
+import { N3SLexer }  from '../src/N3SLexer';
 import {expect} from 'expect';
 
 describe('N3SLexer', () => {

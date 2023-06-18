@@ -1,5 +1,5 @@
 import { IN3SToken, N3SLexer } from "./N3SLexer";
-import { IBlankNode, IGraph , ILiteral, INamedNode, ITerm } from "./parser";
+import { IBlankNode, ILiteral, INamedNode, ITerm } from "./parser";
 
 type ICallBack = (token: IN3SToken) => ICallBack ;
 
@@ -73,6 +73,7 @@ export class N3SParser {
         this.lexer.tokenize(input)?.every( (token: IN3SToken) => {
             return this.readCallback = this.readCallback(token);
         });
+        console.log(this.subject);
     }
 
     // ### `error` emits an error message through the callback
