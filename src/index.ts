@@ -18,14 +18,14 @@ const knownPredicates = [
 main(input);
 
 async function main(path: string) : Promise<void> {
-    try {
-        const parser = new N3Parser({});
-        const graph = await parser.parse(path);
-        const n3s = parser.asN3S(graph, knownPredicates);
-        console.log(n3s);
-    }
-    catch (e) {
-        console.error((e as Error).message);
-        process.exit(3);
-    }
+    const parser = new N3Parser({});
+    parser.parse(path)
+          .then(graph => {
+            const n3s = parser.asN3S(graph, knownPredicates);
+            console.log(n3s);
+          })
+          .catch(e => {
+            console.error(e);
+            process.exit(2);
+          });
 }

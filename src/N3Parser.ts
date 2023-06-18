@@ -62,16 +62,23 @@ export class N3Parser {
     }
 
     public async parse(input: string) : Promise<IGraph> {
-        let store;
+        return new Promise<IGraph>(async (resolve,reject) => {
+            try {
+                let store;
 
-        if (fs.existsSync(input)) {
-            store = await this.parseN3File(input);
-        }
-        else {
-            store = await this.parseN3(input);
-        }
+                if (fs.existsSync(input)) {
+                    store = await this.parseN3File(input);
+                }
+                else {
+                    store = await this.parseN3(input);
+                }
 
-        return this.makeGraph(store);
+                resolve(this.makeGraph(store));
+            }
+            catch (e) {
+                reject(e);
+            }
+        });
     }
 
     public asN3S(graph: IGraph, except: string[] = []) : string {
@@ -125,7 +132,7 @@ export class N3Parser {
             this.scanDynamicTerm(pso,dynamicTerms);
         });
     
-        return  Array.from(dynamicTerms)
+        return Array.from(dynamicTerms)
                      .filter( (dyn) => {
                         let result = true ;
                         except.forEach( (ex) => {
