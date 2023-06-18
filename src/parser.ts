@@ -99,34 +99,43 @@ export function writeDynamic(graph: IGraph, except: string[] = []) : string {
     const dynamicTerms = new Set<string>();
 
     graph.value.forEach( (pso) => {
-        const dynamicPredicates = scanDynamicTerm(pso.predicate);
-        dynamicPredicates.forEach( (dyn) => dynamicTerms.add(dyn) );
+        scanDynamicTerm(pso,dynamicTerms);
     });
 
     return  Array.from(dynamicTerms)
                  .filter( (dyn) => {
-                    return ! except.includes(dyn);
+                    let result = true ;
+                    except.forEach( (ex) => {
+                        if (dyn.match(ex)) {
+                            result = false;
+                        }
+                    });
+                    return result;
                  })
                  .map( (dyn) => {
                         return `:- dynamic('<${dyn}>'/2).`;
                  }).join("\n");
 }
 
-function scanDynamicTerm(term: ITerm) : string[] {
-    if (term.type === 'NamedNode') {
-        return [term.value];
+function scanDynamicTerm(pso: IPSO, container: Set<string>) : void {
+    if (pso.predicate.type === 'NamedNode') {
+        container.add(pso.predicate.value);
     }
-    else if (term.type === 'Graph') {
-        const result : string[] = [];
-        term.value.forEach( (gi) => {
-            const dynamicTermsP = scanDynamicTerm(gi.predicate);
-            dynamicTermsP.forEach( (dyn) => result.push(dyn));
-        });
 
-        return result;
+    if (pso.subject.type === 'Graph') {
+        pso.subject.value.forEach( (pso_i) => {
+            scanDynamicTerm(pso_i, container);
+        });    
     }
-    else {
-        return [];
+    if (pso.predicate.type === 'Graph') {
+        pso.predicate.value.forEach( (pso_i) => {
+            scanDynamicTerm(pso_i, container);
+        });    
+    }
+    if (pso.object.type === 'Graph') {
+        pso.object.value.forEach( (pso_i) => {
+            scanDynamicTerm(pso_i, container);
+        });    
     }
 }
 
