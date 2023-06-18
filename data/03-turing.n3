@@ -1,0 +1,10 @@
+@prefix : <urn:example.org:> .
+@prefix log: <http://www.w3.org/2000/10/swap/log#> .
+
+(_:OutTape _:Machine _:I) log:onNegativeSurface {
+    () log:negativeTriple {
+        () :compute _:OutTape.
+    }.
+    _:Machine :start _:I.
+    (_:I () "#" ()) :find _:OutTape.
+}.

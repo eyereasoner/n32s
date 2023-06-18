@@ -388,7 +388,16 @@ function makeList(term: N3.Term, store: N3.Store) : IList {
             brake = true;
         } 
         else if (first[0].object.value === pref(RDF,'nil')) {
-            brake = true;
+            const termValue = { type: 'List', value: [] as ITerm[]} as IList;
+
+            termList.push(termValue);
+
+            if (rest[0].object.value === pref(RDF,'nil')) {
+                brake = true;
+            }
+            else {
+                searchTerm = rest[0].object;
+            }
         }
         else {
             const termValue = parseTerm(first[0].object, store);
