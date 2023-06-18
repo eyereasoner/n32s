@@ -248,31 +248,16 @@ export class N3Parser {
                 throw new Error(`Variables are not supported in N3S!`);
             }
     
-            if ((termType === 'NamedNode' || termType === 'Literal')
-                    && !this.isGraphLike(quad,graph)) {
-                let subject   = this.parseTerm(quad.subject, store);
-                let predicate = this.parseTerm(quad.predicate, store);
-                let object    = this.parseTerm(quad.object, store);
-                result.value.push({
-                    type: 'PSO',
-                    subject: subject,
-                    predicate: predicate,
-                    object: object
-                } as IPSO);
-            }
-        }, null, null, null, graph);
-    
-        // Next process the explicit bnodes...
-        store.forEach((quad) => {
-            const termType = '' + quad.subject.termType;
-            if (termType === 'BlankNode' 
+            if ((termType === 'NamedNode' || 
+                 termType === 'Literal' ||
+                 termType === 'BlankNode') 
                     && !this.isListLike(quad) 
                     && !this.isGraphLike(quad,graph)) {
                 let subject   = this.parseTerm(quad.subject, store);
                 let predicate = this.parseTerm(quad.predicate, store);
                 let object    = this.parseTerm(quad.object, store);
                 result.value.push({
-                    type: 'PSO', 
+                    type: 'PSO',
                     subject: subject,
                     predicate: predicate,
                     object: object

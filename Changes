@@ -1,4 +1,7 @@
+2023-06-18 
    - Fixing empty list bug (obs. josd)
+   - Fixing ordering bug (obs. josd)
+   - Starting with a N3S lexer and parser
 
 2023-06-17 0.0.4
    - Fixing dynamics
