@@ -1,8 +1,9 @@
 {
   "name": "n32s",
-  "version": "0.0.2",
-  "description": "Notation3 to N3S precompiler",
+  "version": "0.0.4",
+  "description": "Notation3 (RDF Surfaces) to N3S precompiler",
   "main": "js/index.js",
+  "types": "js/index.d.ts",
   "author": "Patrick Hochstenbach <Patrick.Hochstenbach@UGent.be>",
   "license": "MIT",
   "keywords": [
@@ -13,6 +14,11 @@
   "bin": {
     "n32s": "js/index.js"
   },
+  "files": [
+    "js/**/*.d.ts",
+    "js/**/*.js",
+    "js/**/*.js.map"
+  ],
   "scripts": {
     "build": "yarn exec tsc",
     "watch": "yarn exec -- tsc --watch",

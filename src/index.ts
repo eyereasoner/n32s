@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import * as N3 from 'n3';
 import { parseN3File, makeGraph, writeGraph, writeDynamic } from './parser';
+export { parseN3File, makeGraph, writeGraph, writeDynamic } from './parser';
 
 if (process.argv.length != 3) {
     console.log(`usage: ${process.argv[1]} n3-file`);
@@ -12,11 +12,7 @@ const input = process.argv[2];
 
 const knownPredicates = [
     'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
-    'http://www.w3.org/2000/10/swap/log#onNegativeSurface',
-    'http://www.w3.org/2000/10/swap/log#onPositiveSurface',
-    'http://www.w3.org/2000/10/swap/log#onNeutralSurface',
-    'http://www.w3.org/2000/10/swap/log#onQuerySurface',
-    'http://www.w3.org/2000/10/swap/log#negativeTriple'
+    'http://www.w3.org/2000/10/swap/.*',
 ];
 
 main(input);
