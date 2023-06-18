@@ -1,5 +1,5 @@
 import { IN3SToken, N3SLexer } from "./N3SLexer";
-import { IBlankNode, ILiteral, INamedNode, ITerm } from "./parser";
+import { IBlankNode, ILiteral, INamedNode, ITerm } from "./N3Parser";
 
 type ICallBack = (token: IN3SToken) => ICallBack ;
 
