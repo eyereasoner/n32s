@@ -1,5 +1,4 @@
 :- dynamic('<urn:example.org:is>'/2).
-:- dynamic('<urn:example.org:b>'/2).
 :- dynamic('<urn:example.org:Person>'/2).
 '<urn:example.org:is>'('<urn:example.org:test>','<urn:example.org:Person>').
 '<urn:example.org:is>'('<urn:example.org:test>',true).
