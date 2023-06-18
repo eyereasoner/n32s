@@ -11,7 +11,7 @@ describe('N3SLexer', () => {
   });
 
   describe('A N3SLexer instance', () => {
-    function createLexer() { return new N3SLexer(); }
+    function createLexer() { return new N3SLexer({comments: true}); }
     it('should tokenize the empty string',
       shouldTokenize(createLexer(),
                     '',

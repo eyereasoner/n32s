@@ -33,7 +33,7 @@ export class N3SLexer {
     _line : number;
     _comments : boolean;
 
-    constructor() {
+    constructor(options?: any) {
         this._input = "";
         this._line = 0;
         this._simpleApostropheString = /^'([^']+)'/;
@@ -47,7 +47,11 @@ export class N3SLexer {
         this._comment = /^%([^\n\r]*)/;
         this._directive = /^:-[ \t]*([^\n\r]*)/;
         this._whitespace = /^[ \t]+/;
-        this._comments = true;
+        this._comments = false;
+
+        if (options?.comments) {
+            this._comments = true;
+        }
     }
 
     tokenize(input:string, callback?: (e: Error|null, token: IN3SToken)=>void) {
@@ -169,6 +173,10 @@ export class N3SLexer {
                     break;
             }
 
+            if (!type) {
+                return reportSyntaxError(this);
+            }
+            
             const length = matchLength || (match != null ? match[0].length : 0);
 
             emitToken(type,value,prefix,line,length);
@@ -182,6 +190,11 @@ export class N3SLexer {
             const end = start + length;
             const token = { type, value, prefix, line, start, end } as IN3SToken;
             callback(null, token);
+        }
+
+        function reportSyntaxError(self: N3SLexer) { 
+            let match = /^\S*/.exec(input);
+            callback(self._syntaxError(match ? match[0] : ''),{} as IN3SToken); 
         }
     }
 
