@@ -1,5 +1,6 @@
 import * as N3 from 'n3';
 import * as fs from 'fs';
+import * as hash from 'object-hash';
 import { getLogger, Logger } from "log4js";
 
 const XSD = 'http://www.w3.org/2001/XMLSchema#';
@@ -55,8 +56,14 @@ export class N3Parser {
     private logger : Logger;
     private store: N3.Store;
 
+    // quadOrder is a object list that keeps the parsing order of the quads
+    private quadOrder: {
+        [id: string] : number 
+    };
+
     constructor(options: any) {
         this.store = new N3.Store();
+        this.quadOrder = {};
         this.logger = getLogger();
         if (options?.dynamics === false) {
             this.dynamics = false;
@@ -102,6 +109,8 @@ export class N3Parser {
     private parseN3(n3: string) : Promise<void> {
         this.logger.debug(`parsing: ${n3}`);
         return new Promise<void>( (resolve,reject) => {
+            let quadPosition = -1;
+
             const parser = new N3.Parser({ format: 'text/n3' });
     
             parser.parse(n3,
@@ -112,7 +121,10 @@ export class N3Parser {
     
                     if (quad) {
                         this.logger.trace('parsing quad:',quad);
-                        this.store.add(quad)
+                        this.store.add(quad);
+                        quadPosition++;
+                        this.logger.trace('quad position:', quadPosition);
+                        this.quadOrder[hash.sha1(quad)] = quadPosition;
                     }
                     else {
                         resolve();
@@ -239,8 +251,11 @@ export class N3Parser {
             value: [] as IPSO[],
             datatype: null
         };
-    
-        // First process the named nodes and literals...
+   
+        // Gather all pso values (we will sort them later)
+        const psoValues : any[] = [];
+
+        // First process the will behaved nodes (not the junk list-like stuff)...
         this.store.forEach((quad) => {
             const termType = '' + quad.subject.termType;
     
@@ -257,12 +272,12 @@ export class N3Parser {
                 let subject   = this.parseTerm(quad.subject);
                 let predicate = this.parseTerm(quad.predicate);
                 let object    = this.parseTerm(quad.object);
-                result.value.push({
-                    type: 'PSO',
+                psoValues.push({
+                    quad: quad,
                     subject: subject,
                     predicate: predicate,
                     object: object
-                } as IPSO);
+                });
             }
         }, null, null, null, graph);
     
@@ -275,15 +290,35 @@ export class N3Parser {
                 let subject   = this.parseTerm(quad.subject);
                 let predicate = this.parseTerm(quad.predicate);
                 let object    = this.parseTerm(quad.object);
-                result.value.push({
-                    type: 'PSO', 
+                psoValues.push({
+                    quad: quad,
                     subject: subject,
                     predicate: predicate,
                     object: object
-                } as IPSO);
+                });
             }
         }, null, null, null, graph);
-    
+  
+        // Order the results and add them to the graph
+        psoValues.sort( (n1,n2) => {
+            let n1Order = this.quadOrder[hash.sha1(n1.quad)];
+            let n2Order = this.quadOrder[hash.sha1(n2.quad)];
+            if (n1Order > n2Order) {
+                return 1;
+            }
+            if (n1Order < n2Order) {
+                return -1;
+            }
+            return 0;
+        }).forEach( pso => {
+            result.value.push({
+                type: 'PSO',
+                subject: pso.subject,
+                predicate: pso.predicate,
+                object: pso.object
+            } as IPSO);
+        });
+        
         return result;
     }
 

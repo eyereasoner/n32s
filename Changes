@@ -1,3 +1,6 @@
+2023-06-19
+   - Hardening the ordering bug fix
+  
 2023-06-18 
    - Fixing empty list bug (obs. josd)
    - Fixing ordering bug (obs. josd)
