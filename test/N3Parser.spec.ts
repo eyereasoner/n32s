@@ -28,7 +28,7 @@ describe('N3Parser', () => {
     it('should parse <s> <p> "blue ball"',
         shouldParse(
             '<s> <p> "blue ball".',
-            '\'<p>\'(\'<s>\',\'blue ball\').')
+            '\'<p>\'(\'<s>\',"blue ball").')
     );
 
     it('should parse <s> <p> 123',
@@ -70,7 +70,7 @@ describe('N3Parser', () => {
     it('should parse <s> <p> (() "#" <x> (<y>))',
         shouldParse(
             '<s> <p> (() "#" <x> (<y>)).',
-            '\'<p>\'(\'<s>\',[[],\'#\',\'<x>\',[\'<y>\']]).')
+            '\'<p>\'(\'<s>\',[[],"#",\'<x>\',[\'<y>\']]).')
     );
 
     it('should parse <s> <p> { <a> <b> <c> }',

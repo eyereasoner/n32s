@@ -1,4 +1,4 @@
 :- dynamic('<urn:example.org:compute>'/2).
 :- dynamic('<urn:example.org:start>'/2).
 :- dynamic('<urn:example.org:find>'/2).
-'<http://www.w3.org/2000/10/swap/log#onNegativeSurface>'(['_:OutTape','_:Machine','_:I'],('<http://www.w3.org/2000/10/swap/log#negativeTriple>'([],('<urn:example.org:compute>'([],'_:OutTape'))),'<urn:example.org:start>'('_:Machine','_:I'),'<urn:example.org:find>'(['_:I',[],'#',[]],'_:OutTape'))).
+'<http://www.w3.org/2000/10/swap/log#onNegativeSurface>'(['_:OutTape','_:Machine','_:I'],('<http://www.w3.org/2000/10/swap/log#negativeTriple>'([],('<urn:example.org:compute>'([],'_:OutTape'))),'<urn:example.org:start>'('_:Machine','_:I'),'<urn:example.org:find>'(['_:I',[],"#",[]],'_:OutTape'))).

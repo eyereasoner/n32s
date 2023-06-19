@@ -201,13 +201,17 @@ export class N3Parser {
         return `${predicate}(${subject},${object}).`;
     }
 
+    private string_escape(str:string) : string {
+        return (str + '').replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
+    }
+
     private writeTerm(term: ITerm) : string {
         if (term.type === 'NamedNode') {
             return `'<${term.value}>'`;
         }
         else if (term.type === 'Literal') {
             if (term.datatype === this.pref(XSD,'string')) {
-                return `'${term.value}'`;
+                return `"${this.string_escape(term.value)}"`;
             }
             else if (term.datatype === this.pref(XSD,'integer')) {
                 return term.value;
