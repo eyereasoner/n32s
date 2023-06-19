@@ -1,4 +1,6 @@
+:- dynamic('<urn:example.org:E>'/2).
 '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'('_:A',1).
 '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'('_:B',2).
 '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'('<urn:example.org:C>',3).
 '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'('<urn:example.org:D>',4).
+'<urn:example.org:E>'(['_:X','_:F'],('<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'('_:X','<urn:example.org:G>'),'<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'('_:F',['_:X']))).

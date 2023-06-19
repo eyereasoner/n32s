@@ -2,13 +2,35 @@
 
 import { N3Parser } from './N3Parser';
 export { N3Parser } from './N3Parser';
+import { program } from 'commander';
+import * as log4js from 'log4js';
 
-if (process.argv.length != 3) {
-    console.log(`usage: ${process.argv[1]} n3-file`);
-    process.exit(1);
+program.version('0.0.4')
+       .argument('<file>')
+       .option('-d,--info','output debugging messages')
+       .option('-dd,--debug','output more debugging messages')
+       .option('-ddd,--trace','output much more debugging messages');
+
+program.parse(process.argv);
+
+const opts   = program.opts();
+const logger = log4js.getLogger();
+
+if (opts.info) {
+  logger.level = "info";
 }
 
-const input = process.argv[2];
+if (opts.debug) {
+  logger.level = "debug";
+}
+
+if (opts.trace) {
+  logger.level = "trace";
+}
+
+const input = program.args[0];
+
+logger.info(`input: ${input}`);
 
 const knownPredicates = [
     'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',

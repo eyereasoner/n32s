@@ -1,11 +1,9 @@
 import * as N3 from 'n3';
 import * as fs from 'fs';
-import { getLogger } from "log4js";
+import { getLogger, Logger } from "log4js";
 
 const XSD = 'http://www.w3.org/2001/XMLSchema#';
 const RDF = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
-
-const logger = getLogger();
 
 export type IPSO = {
     type: 'PSO',
@@ -54,8 +52,12 @@ export type IGraph = {
 
 export class N3Parser {
     private dynamics = true;
+    private logger : Logger;
+    private store: N3.Store;
 
     constructor(options: any) {
+        this.store = new N3.Store();
+        this.logger = getLogger();
         if (options?.dynamics === false) {
             this.dynamics = false;
         }
@@ -64,16 +66,14 @@ export class N3Parser {
     public async parse(input: string) : Promise<IGraph> {
         return new Promise<IGraph>(async (resolve,reject) => {
             try {
-                let store;
-
                 if (fs.existsSync(input)) {
-                    store = await this.parseN3File(input);
+                    await this.parseN3File(input);
                 }
                 else {
-                    store = await this.parseN3(input);
+                    await this.parseN3(input);
                 }
 
-                resolve(this.makeGraph(store));
+                resolve(this.makeGraph());
             }
             catch (e) {
                 reject(e);
@@ -93,16 +93,16 @@ export class N3Parser {
         }
     }
 
-    private parseN3File(file: string) : Promise<N3.Store> {
-        logger.debug(`parsing: ${file}`);
+    private parseN3File(file: string) : Promise<void> {
+        this.logger.debug(`parsing: ${file}`);
         const n3 = fs.readFileSync(file, { encoding: "utf8"});
         return this.parseN3(n3);
     }
 
-    private parseN3(n3: string) : Promise<N3.Store> {
-        return new Promise<N3.Store>( (resolve,reject) => {
+    private parseN3(n3: string) : Promise<void> {
+        this.logger.debug(`parsing: ${n3}`);
+        return new Promise<void>( (resolve,reject) => {
             const parser = new N3.Parser({ format: 'text/n3' });
-            const store  = new N3.Store(); 
     
             parser.parse(n3,
                 (error, quad, _prefixes) => {
@@ -111,10 +111,11 @@ export class N3Parser {
                     }
     
                     if (quad) {
-                        store.add(quad)
+                        this.logger.trace('parsing quad:',quad);
+                        this.store.add(quad)
                     }
                     else {
-                        resolve(store);
+                        resolve();
                     }
                 }
             );
@@ -232,7 +233,7 @@ export class N3Parser {
         return 'x';
     }
 
-    private makeGraph(store: N3.Store, graph: N3.Term = N3.DataFactory.defaultGraph()) : IGraph {
+    private makeGraph(graph: N3.Term = N3.DataFactory.defaultGraph()) : IGraph {
         const result : IGraph = {
             type: 'Graph',
             value: [] as IPSO[],
@@ -240,7 +241,7 @@ export class N3Parser {
         };
     
         // First process the named nodes and literals...
-        store.forEach((quad) => {
+        this.store.forEach((quad) => {
             const termType = '' + quad.subject.termType;
     
             if (termType === 'Variable') {
@@ -253,9 +254,9 @@ export class N3Parser {
                  termType === 'BlankNode') 
                     && !this.isListLike(quad) 
                     && !this.isGraphLike(quad,graph)) {
-                let subject   = this.parseTerm(quad.subject, store);
-                let predicate = this.parseTerm(quad.predicate, store);
-                let object    = this.parseTerm(quad.object, store);
+                let subject   = this.parseTerm(quad.subject);
+                let predicate = this.parseTerm(quad.predicate);
+                let object    = this.parseTerm(quad.object);
                 result.value.push({
                     type: 'PSO',
                     subject: subject,
@@ -266,14 +267,14 @@ export class N3Parser {
         }, null, null, null, graph);
     
         // Next process all the rest ...
-        store.forEach((quad) => {
+        this.store.forEach((quad) => {
             const termType = '' + quad.subject.termType;
             if (termType === 'BlankNode' 
                     && this.isListLike(quad) 
                     && !this.isGraphLike(quad,graph)) {
-                let subject   = this.parseTerm(quad.subject, store);
-                let predicate = this.parseTerm(quad.predicate, store);
-                let object    = this.parseTerm(quad.object, store);
+                let subject   = this.parseTerm(quad.subject);
+                let predicate = this.parseTerm(quad.predicate);
+                let object    = this.parseTerm(quad.object);
                 result.value.push({
                     type: 'PSO', 
                     subject: subject,
@@ -286,7 +287,7 @@ export class N3Parser {
         return result;
     }
 
-    private parseTerm(term: N3.Term, store: N3.Store) : ITerm {
+    private parseTerm(term: N3.Term) : ITerm {
         if (term.termType === 'NamedNode') {
             if (term.value === this.pref(RDF,'nil')) {
                 return { type: 'List' , value: [] as ITerm[] } as IList;
@@ -303,11 +304,11 @@ export class N3Parser {
             } as ILiteral;
         }
         else if (term.termType === 'BlankNode') {
-            if (this.isList(term,store)) {
-                return this.makeList(term,store);
+            if (this.isList(term)) {
+                return this.makeList(term);
             }
-            else if (this.isGraph(term,store)) {
-                return this.makeGraph(store,term);
+            else if (this.isGraph(term)) {
+                return this.makeGraph(term);
             }
             else {
                 const genid = this.makeGenId(term);
@@ -355,12 +356,12 @@ export class N3Parser {
         }
     } 
 
-    private isList(term: N3.Term, store: N3.Store) : boolean {
+    private isList(term: N3.Term) : boolean {
         let searchTerm = term;
         let brake = false;
         do {
-            const first = store.getQuads(searchTerm, this.pref(RDF,'first'),null,null);
-            const rest = store.getQuads(searchTerm, this.pref(RDF,'rest'),null,null);
+            const first = this.store.getQuads(searchTerm, this.pref(RDF,'first'),null,null);
+            const rest = this.store.getQuads(searchTerm, this.pref(RDF,'rest'),null,null);
     
             if (first.length == 1 && rest.length == 1) {
                 // we are ok
@@ -380,8 +381,8 @@ export class N3Parser {
         return true;
     }
 
-    private isGraph(term: N3.Term, store: N3.Store) : boolean {
-        const graph = store.getQuads(null, null, null, term);
+    private isGraph(term: N3.Term) : boolean {
+        const graph = this.store.getQuads(null, null, null, term);
     
         if (graph.length == 0) {
             return false;
@@ -391,14 +392,14 @@ export class N3Parser {
         }
     }
 
-    private makeList(term: N3.Term, store: N3.Store) : IList {
+    private makeList(term: N3.Term) : IList {
         let termList : ITerm[] = [];
         let searchTerm = term;
         let brake = false;
     
         do {
-            const first = store.getQuads(searchTerm,this.pref(RDF,'first'),null,null);
-            const rest  = store.getQuads(searchTerm,this.pref(RDF,'rest'),null,null);
+            const first = this.store.getQuads(searchTerm,this.pref(RDF,'first'),null,null);
+            const rest  = this.store.getQuads(searchTerm,this.pref(RDF,'rest'),null,null);
     
             if (first.length == 0) {
                 if (rest.length == 0 || rest.length != 1) {
@@ -424,7 +425,7 @@ export class N3Parser {
                 }
             }
             else {
-                const termValue = this.parseTerm(first[0].object, store);
+                const termValue = this.parseTerm(first[0].object);
     
                 termList.push(termValue);
     
@@ -436,8 +437,8 @@ export class N3Parser {
                 }
             }
     
-            first.forEach( (quad) => { store.removeQuad(quad) });
-            rest.forEach( (quad) => { store.removeQuad(quad) });
+            first.forEach( (quad) => { this.store.removeQuad(quad) });
+            rest.forEach( (quad) => { this.store.removeQuad(quad) });
         } while (!brake);
         
         return { type: 'List', value: termList } as IList;
