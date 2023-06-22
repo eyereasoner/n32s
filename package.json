@@ -28,7 +28,6 @@
   "dependencies": {
     "commander": "^11.0.0",
     "log4js": "^6.9.1",
-    "n3": "^1.16.4",
     "object-hash": "^3.0.0"
   },
   "devDependencies": {

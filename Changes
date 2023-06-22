@@ -1,3 +1,6 @@
+2023-06-22
+   - Fixing graph list issues using N3.js v.2.0.0
+  
 2023-06-19
    - Hardening the ordering bug fix
    - Fixing string literal processing
