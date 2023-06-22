@@ -10,6 +10,8 @@ Need N3.js version 2.0.0
 
 ```
 git clone git@github.com:rdfjs/N3.js.git
+git fetch --all
+git checkout versions/2.0.0
 cd N3.js
 yarn 
 yarn link
