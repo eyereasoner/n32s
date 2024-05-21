@@ -1,18 +1,34 @@
+import * as fs from 'fs';
 import { IN3SToken, N3SLexer } from "./N3SLexer";
-import { IBlankNode, ILiteral, INamedNode, ITerm } from "./N3Parser";
+import { IBlankNode, ILiteral, INamedNode, IList, ITerm } from "./N3Parser";
 import { getLogger, Logger } from "log4js";
+
+const termType = {
+    Subject: 0,
+    Predicate: 1 ,
+    Object : 2 
+};
 
 type ICallBack = (token: IN3SToken) => ICallBack ;
 
 export class N3SParser {
     private subject : ITerm;
+    private predicate : ITerm;
+    private object : ITerm;
+    private nextTerm = termType.Predicate;
+    private listStack : ITerm[];
     private lexer : N3SLexer;
+    private inList : boolean;
     private readCallback : ICallBack;
     private logger : Logger;
 
     constructor() {
         this.lexer = new N3SLexer();
         this.subject = {} as ITerm;
+        this.predicate = {} as ITerm;
+        this.object = {} as ITerm;
+        this.listStack = [];
+        this.inList = false;
         this.readCallback = this.readInTopContext;
         this.logger = getLogger();
     }
@@ -21,31 +37,76 @@ export class N3SParser {
         switch(token.type) {
             case 'directive':
                 // Ignore directives...
-                return this.readSubject;
+                return this.readTerm;
             default:
-                return this.readSubject(token);
+                return this.readTerm(token);
         }
     }
 
-    private readSubject(token: IN3SToken) : ICallBack {
-        this.logger.debug(`readSubject %s`, token);
+    private readTerm(token: IN3SToken) : ICallBack {
+        this.logger.debug(`readTerm %s`, token);
+
+        let entity : ITerm | undefined = undefined;
 
         switch (token.type) {
-            case 'IRI':
-                const entity = this.readEntity(token);
-                if (entity !== undefined) {
-                    this.subject = entity;
-                }
-                return this.readSubject;
-            default:
-                return this.readSubject;
+            case "IRI":
+                entity = this.readEntity(token);
+                break;
+            case "literal":
+                entity = this.readEntity(token);
+                break;
+            case "blank":
+                entity = this.readEntity(token);
+                break;
+            case "[" :
+                this.listStack = [];
+                this.inList = true;
+                break;
+            case "]":
+                entity = {
+                    type: 'List',
+                    value: this.listStack,
+                    datatype: null 
+                } as IList;
+                this.listStack = [];
+                this.inList = false;
+                break;
+            case ".":
+                this.gatherResults();
+                break;
         };
+
+        if (entity !== undefined && ! this.inList) {
+            switch (this.nextTerm) { 
+                case termType.Subject:
+                    this.subject = entity;
+                    this.nextTerm = termType.Object;
+                    break;
+                case termType.Predicate:
+                    this.predicate = entity;
+                    this.nextTerm = termType.Subject;
+                    break;
+                case termType.Object:
+                    this.object = entity;
+                    this.nextTerm = termType.Predicate;
+                    break;
+            };
+        }
+
+        return this.readTerm;
+    }
+
+    private gatherResults() : void {
+        this.logger.debug(`subject: %s`,this.subject);
+        this.logger.debug(`predicate: %s`,this.predicate);
+        this.logger.debug(`object: %s`,this.object);
     }
 
     private readEntity(token: IN3SToken) : ITerm | undefined {
         this.logger.debug(`readEntity %s`, token);
  
         let value = undefined;
+
         switch (token.type) {
             case 'IRI':
                 value = {
@@ -73,15 +134,21 @@ export class N3SParser {
                 value = undefined;
         };
 
+        if (value !== undefined && this.inList) {
+            this.logger.debug(`pushing value to listStack pos=%d`,this.listStack.length + 1);
+            this.listStack.push(value);
+        }
+
         this.logger.debug(`value=%s`,value);
+
         return value;
     }
 
-    public parse(input: string) {
+    public parse(path: string) {
+        const input = fs.readFileSync(path, { encoding: 'utf-8'});
         this.lexer.tokenize(input)?.every( (token: IN3SToken) => {
             return this.readCallback = this.readCallback(token);
         });
-        console.log(this.subject);
     }
 
     // ### `error` emits an error message through the callback

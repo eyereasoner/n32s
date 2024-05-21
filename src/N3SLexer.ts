@@ -1,3 +1,5 @@
+import { getLogger, Logger } from "log4js";
+
 export const XSD  = 'http://www.w3.org/2001/XMLSchema#';
 
 export const xsd =  {
@@ -32,8 +34,10 @@ export class N3SLexer {
     private directive: RegExp;
     private line : number;
     private comments : boolean;
+    private logger : Logger;
 
     constructor(options?: any) {
+        this.logger = getLogger();
         this.input = "";
         this.line = 0;
         this.simpleApostropheString = /^'([^']+)'/;
@@ -178,6 +182,15 @@ export class N3SLexer {
             }
 
             const length = matchLength || (match != null ? match[0].length : 0);
+
+            this.logger.debug(
+                `emitToken: type=%s ; value=%s ; prefix=%s ; line=%s ; start=%s ; end=%s`
+                   , type
+                   , value
+                   , prefix
+                   , line
+                   , length
+            );
 
             emitToken(type,value,prefix,line,length);
 

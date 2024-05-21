@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 
 import { N3Parser } from './N3Parser';
-export { N3Parser } from './N3Parser';
+import { N3SParser } from './N3SParser';
 import { program } from 'commander';
 import * as log4js from 'log4js';
 
 program.version('0.0.4')
        .argument('<file>')
+       .option('-r,--reverse','inverse parsing')
        .option('-d,--info','output debugging messages')
        .option('-dd,--debug','output more debugging messages')
        .option('-ddd,--trace','output much more debugging messages');
@@ -40,14 +41,20 @@ const knownPredicates = [
 main(input);
 
 async function main(path: string) : Promise<void> {
-    const parser = new N3Parser({});
-    parser.parse(path)
-          .then(graph => {
-            const n3s = parser.asN3S(graph, knownPredicates);
-            console.log(n3s);
-          })
-          .catch(e => {
-            console.error(e);
-            process.exit(2);
-          });
+    if (opts.reverse) {
+      const parser = new N3SParser();
+      parser.parse(path);
+    }
+    else {
+      const parser = new N3Parser({});
+      parser.parse(path)
+            .then(graph => {
+              const n3s = parser.asN3S(graph, knownPredicates);
+              console.log(n3s);
+            })
+            .catch(e => {
+              console.error(e);
+              process.exit(2);
+            });
+    }
 }
