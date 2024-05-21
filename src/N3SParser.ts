@@ -1,5 +1,6 @@
 import { IN3SToken, N3SLexer } from "./N3SLexer";
 import { IBlankNode, ILiteral, INamedNode, ITerm } from "./N3Parser";
+import { getLogger, Logger } from "log4js";
 
 type ICallBack = (token: IN3SToken) => ICallBack ;
 
@@ -7,11 +8,13 @@ export class N3SParser {
     private subject : ITerm;
     private lexer : N3SLexer;
     private readCallback : ICallBack;
+    private logger : Logger;
 
     constructor() {
         this.lexer = new N3SLexer();
         this.subject = {} as ITerm;
         this.readCallback = this.readInTopContext;
+        this.logger = getLogger();
     }
 
     private readInTopContext(token: IN3SToken) : ICallBack {
@@ -25,6 +28,8 @@ export class N3SParser {
     }
 
     private readSubject(token: IN3SToken) : ICallBack {
+        this.logger.debug(`readSubject %s`, token);
+
         switch (token.type) {
             case 'IRI':
                 const entity = this.readEntity(token);
@@ -38,6 +43,8 @@ export class N3SParser {
     }
 
     private readEntity(token: IN3SToken) : ITerm | undefined {
+        this.logger.debug(`readEntity %s`, token);
+ 
         let value = undefined;
         switch (token.type) {
             case 'IRI':
@@ -66,6 +73,7 @@ export class N3SParser {
                 value = undefined;
         };
 
+        this.logger.debug(`value=%s`,value);
         return value;
     }
 

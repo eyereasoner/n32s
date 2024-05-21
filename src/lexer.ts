@@ -1,4 +1,10 @@
 import { N3SParser } from './N3SParser';
+//import { N3SLexer } from './N3SLexer';
+import * as log4js from 'log4js';
+
+const logger = log4js.getLogger();
+
+logger.level = 'debug';
 
 main();
 
@@ -22,11 +28,11 @@ async function main() : Promise<void> {
      //   return true;
 //    });
 
-    // const myLexer = new N3SLexer();
+    //  const myLexer = new N3SLexer();
 
     // myLexer.tokenize(sample)?.every( token => {
-    //     console.log(token);
-    //     return true;
+    //      console.log(`token: %s`,token);
+    //      return true;
     // });
 
     const parser = new N3SParser();
