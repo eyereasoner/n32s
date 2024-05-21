@@ -184,7 +184,7 @@ export class N3SLexer {
             const length = matchLength || (match != null ? match[0].length : 0);
 
             this.logger.debug(
-                `emitToken: type=%s ; value=%s ; prefix=%s ; line=%s ; start=%s ; end=%s`
+                `emitToken: type=%s ; value=%s ; prefix=%s ; line=%s ; length=%s`
                    , type
                    , value
                    , prefix
