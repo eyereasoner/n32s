@@ -43,7 +43,8 @@ main(input);
 async function main(path: string) : Promise<void> {
     if (opts.reverse) {
       const parser = new N3SParser();
-      parser.parse(path);
+      const result = await parser.parse(path);
+      console.log(result);
     }
     else {
       const parser = new N3Parser({});

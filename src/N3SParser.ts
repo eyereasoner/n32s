@@ -1,7 +1,11 @@
 import * as fs from 'fs';
+import * as N3 from 'n3';
 import { IN3SToken, N3SLexer } from "./N3SLexer";
 import { IBlankNode, ILiteral, INamedNode, IList, ITerm } from "./N3Parser";
 import { getLogger, Logger } from "log4js";
+
+const { DataFactory } = N3;
+const { namedNode, literal, blankNode } = DataFactory;
 
 const termType = {
     Subject: 0,
@@ -23,6 +27,7 @@ export class N3SParser {
     private lexer : N3SLexer;
     private inList : boolean;
     private readCallback : ICallBack;
+    private writer : N3.Writer;
     private logger : Logger;
 
     constructor() {
@@ -33,6 +38,7 @@ export class N3SParser {
         this.nextTerm = termType.Predicate;
         this.listStack = [] as ITerm[];
         this.inList = false;
+        this.writer = new N3.Writer();
         this.readCallback = this.readInTopContext;
         this.logger = getLogger();
     }
@@ -61,8 +67,9 @@ export class N3SParser {
                 }
                 else {
                     this.logger.error(`expecting '.' but got %s`,token);
-                    throw new Error(`Expecting '.'`); 
+                    this.error(`Expecting '.'`,token); 
                 } 
+                break;
             case termType.RightParen:
                 if ( token.type === ')') {
                     this.nextTerm = termType.Dot;
@@ -70,8 +77,9 @@ export class N3SParser {
                 }
                 else {
                     this.logger.error(`expecting ')' but got %s`,token);
-                    throw new Error(`Expecting ')'`); 
+                    this.error(`Expecting ')'`,token); 
                 }
+                break;
             case termType.LeftParen: 
                 if ( token.type === '(') {
                     this.nextTerm = termType.Subject;
@@ -79,15 +87,16 @@ export class N3SParser {
                 }
                 else {
                     this.logger.error(`expecting '(' but got %s`,token);
-                    throw new Error(`Expecting '('`); 
+                    this.error(`Expecting '('`,token); 
                 }
+                break;
             case termType.Predicate:
                 if ( token.type === "IRI" || token.type === "blank"  || token.type === 'eof') {
                     // we are ok
                 }
                 else {
                     this.logger.error(`expecting IRI or blank but got %s`,token);
-                    throw new Error(`Expecting IRI or blank`);
+                    this.error(`Expecting IRI or blank`,token);
                 }
                 break;
         }
@@ -141,6 +150,41 @@ export class N3SParser {
         this.logger.debug(`subject: %s`,this.subject);
         this.logger.debug(`predicate: %s`,this.predicate);
         this.logger.debug(`object: %s`,this.object);
+        let subject : N3.NamedNode | N3.BlankNode ;
+        let predicate : N3.NamedNode ;
+        let object : N3.NamedNode | N3.Literal | N3.BlankNode;
+
+        if (this.subject.type === 'NamedNode') {
+            subject = namedNode(this.subject.value);
+        }
+        else if (this.subject.type === 'BlankNode') {
+            subject = blankNode(this.subject.value);
+        }
+        else {
+            throw Error(`Wrong type ${this.subject.type}`);
+        }
+
+        if (this.predicate.type === 'NamedNode') {
+            predicate = namedNode(this.predicate.value);
+        }
+        else {
+            throw Error(`Wrong type ${this.predicate.type}`);
+        }
+
+        if (this.object.type === 'NamedNode') {
+            object = namedNode(this.object.value);
+        }
+        else if (this.object.type === 'BlankNode') {
+            object = blankNode(this.object.value);
+        }
+        else if (this.object.type === 'Literal') {
+            object = literal(this.object.value, this.object.datatype);
+        }
+        else {
+            throw Error(`Wrong type ${this.object.type}`);
+        } 
+
+        this.writer.addQuad(subject,predicate,object);
     }
 
     private readEntity(token: IN3SToken) : ITerm | undefined {
@@ -185,10 +229,19 @@ export class N3SParser {
         return value;
     }
 
-    public parse(path: string) {
-        const input = fs.readFileSync(path, { encoding: 'utf-8'});
-        this.lexer.tokenize(input)?.every( (token: IN3SToken) => {
-            return this.readCallback = this.readCallback(token);
+    public async parse(path: string) {
+        return new Promise<string>( (resolve,reject) => {
+            const input = fs.readFileSync(path, { encoding: 'utf-8'});
+            this.lexer.tokenize(input)?.every( (token: IN3SToken) => {
+                return this.readCallback = this.readCallback(token);
+            });
+            this.writer.end( (error,result) => {
+                if (error) {
+                    reject(error);
+                }
+                resolve(result);
+            });
+            return 
         });
     }
 
