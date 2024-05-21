@@ -4,6 +4,7 @@ import { IN3SToken, N3SLexer } from "./N3SLexer";
 import { IBlankNode, ILiteral, INamedNode, IList, ITerm } from "./N3Parser";
 import { getLogger, Logger } from "log4js";
 
+const RDF = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
 const { DataFactory } = N3;
 const { namedNode, literal, blankNode } = DataFactory;
 
@@ -150,41 +151,102 @@ export class N3SParser {
         this.logger.debug(`subject: %s`,this.subject);
         this.logger.debug(`predicate: %s`,this.predicate);
         this.logger.debug(`object: %s`,this.object);
-        let subject : N3.NamedNode | N3.BlankNode ;
-        let predicate : N3.NamedNode ;
-        let object : N3.NamedNode | N3.Literal | N3.BlankNode;
+    
+        this.writeSPO(this.subject, this.predicate, this.object);
+    }
 
-        if (this.subject.type === 'NamedNode') {
-            subject = namedNode(this.subject.value);
+    private writeSPO(subject : ITerm , predicate: ITerm , object: ITerm) : void {
+        let s : N3.NamedNode | N3.BlankNode ;
+        let p : N3.NamedNode ;
+        let o : N3.NamedNode | N3.Literal | N3.BlankNode;
+
+        if (subject.type === 'NamedNode') {
+            s = namedNode(subject.value);
         }
-        else if (this.subject.type === 'BlankNode') {
-            subject = blankNode(this.subject.value);
+        else if (subject.type === 'BlankNode') {
+            s = blankNode(subject.value);
+        }
+        else if (subject.type === 'List') {
+            s = blankNode();
         }
         else {
-            throw Error(`Wrong type ${this.subject.type}`);
+            throw Error(`Wrong subject type ${subject.type}`);
         }
 
-        if (this.predicate.type === 'NamedNode') {
-            predicate = namedNode(this.predicate.value);
+        if (predicate.type === 'NamedNode') {
+            p = namedNode(predicate.value);
         }
         else {
-            throw Error(`Wrong type ${this.predicate.type}`);
+            throw Error(`Wrong predicate type ${predicate.type}`);
         }
 
-        if (this.object.type === 'NamedNode') {
-            object = namedNode(this.object.value);
+        if (object.type === 'NamedNode') {
+            o = namedNode(object.value);
         }
-        else if (this.object.type === 'BlankNode') {
-            object = blankNode(this.object.value);
+        else if (object.type === 'BlankNode') {
+            o = blankNode(object.value);
         }
-        else if (this.object.type === 'Literal') {
-            object = literal(this.object.value, this.object.datatype);
+        else if (object.type === 'Literal') {
+            o = literal(object.value, object.datatype);
+        }
+        else if (object.type === 'List') {
+            o = blankNode();
         }
         else {
-            throw Error(`Wrong type ${this.object.type}`);
+            throw Error(`Wrong object type ${object.type}`);
         } 
 
-        this.writer.addQuad(subject,predicate,object);
+        this.writer.addQuad(s,p,o);
+
+        if (subject.type === 'List') {
+            this.writeList(s,subject);
+        }
+
+        if (object.type === 'List') {
+            this.writeList(o,object);
+        }
+    }
+
+    private writeList(subject: N3.NamedNode | N3.BlankNode | N3.Literal , term: IList) {
+        let prev = subject;
+        for (let i = 0 ; i < term.value.length ; i++) {
+            let next = blankNode();
+            this.writeSPO({
+                    type: 'BlankNode',
+                    value: prev.value,
+                    datatype: null
+                } as IBlankNode,
+                {
+                    type: 'NamedNode',
+                    value: `${RDF}:first`,
+                    datatype: null
+                } as INamedNode,
+                term.value[i]
+            );
+            this.writeSPO({
+                type: 'BlankNode',
+                value: prev.value,
+                datatype: null
+            } as IBlankNode,
+            {
+                type: 'NamedNode',
+                value: `${RDF}next`,
+                datatype: null
+            } as INamedNode,
+            i == term.value.length - 1 ?
+                {
+                    type: 'NamedNode',
+                    value: `${RDF}nil`,
+                    datatype: null
+                } as INamedNode:
+                {
+                    type: 'BlankNode',
+                    value: next.value,
+                    datatype: null
+                } as IBlankNode 
+            ); 
+            prev = next;
+        }
     }
 
     private readEntity(token: IN3SToken) : ITerm | undefined {
@@ -245,7 +307,6 @@ export class N3SParser {
         });
     }
 
-    // ### `error` emits an error message through the callback
     private error(message: string, token: IN3SToken) {
         throw new Error(`${message} on line ${token.line}.`);
     }
