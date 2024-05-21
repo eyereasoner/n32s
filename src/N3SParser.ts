@@ -6,7 +6,10 @@ import { getLogger, Logger } from "log4js";
 const termType = {
     Subject: 0,
     Predicate: 1 ,
-    Object : 2 
+    Object : 2 ,
+    LeftParen: 3 ,
+    RightParen: 4 ,
+    Dot: 5
 };
 
 type ICallBack = (token: IN3SToken) => ICallBack ;
@@ -15,7 +18,7 @@ export class N3SParser {
     private subject : ITerm;
     private predicate : ITerm;
     private object : ITerm;
-    private nextTerm = termType.Predicate;
+    private nextTerm : number;
     private listStack : ITerm[];
     private lexer : N3SLexer;
     private inList : boolean;
@@ -27,7 +30,8 @@ export class N3SParser {
         this.subject = {} as ITerm;
         this.predicate = {} as ITerm;
         this.object = {} as ITerm;
-        this.listStack = [];
+        this.nextTerm = termType.Predicate;
+        this.listStack = [] as ITerm[];
         this.inList = false;
         this.readCallback = this.readInTopContext;
         this.logger = getLogger();
@@ -47,6 +51,46 @@ export class N3SParser {
         this.logger.debug(`readTerm %s`, token);
 
         let entity : ITerm | undefined = undefined;
+
+        switch (this.nextTerm) {
+            case termType.Dot:
+                if ( token.type === '.') {
+                    this.gatherResults();
+                    this.nextTerm = termType.Predicate;
+                    return this.readTerm;
+                }
+                else {
+                    this.logger.error(`expecting '.' but got %s`,token);
+                    throw new Error(`Expecting '.'`); 
+                } 
+            case termType.RightParen:
+                if ( token.type === ')') {
+                    this.nextTerm = termType.Dot;
+                    return this.readTerm;
+                }
+                else {
+                    this.logger.error(`expecting ')' but got %s`,token);
+                    throw new Error(`Expecting ')'`); 
+                }
+            case termType.LeftParen: 
+                if ( token.type === '(') {
+                    this.nextTerm = termType.Subject;
+                    return this.readTerm;
+                }
+                else {
+                    this.logger.error(`expecting '(' but got %s`,token);
+                    throw new Error(`Expecting '('`); 
+                }
+            case termType.Predicate:
+                if ( token.type === "IRI" || token.type === "blank"  || token.type === 'eof') {
+                    // we are ok
+                }
+                else {
+                    this.logger.error(`expecting IRI or blank but got %s`,token);
+                    throw new Error(`Expecting IRI or blank`);
+                }
+                break;
+        }
 
         switch (token.type) {
             case "IRI":
@@ -71,9 +115,6 @@ export class N3SParser {
                 this.listStack = [];
                 this.inList = false;
                 break;
-            case ".":
-                this.gatherResults();
-                break;
         };
 
         if (entity !== undefined && ! this.inList) {
@@ -84,11 +125,11 @@ export class N3SParser {
                     break;
                 case termType.Predicate:
                     this.predicate = entity;
-                    this.nextTerm = termType.Subject;
+                    this.nextTerm = termType.LeftParen;
                     break;
                 case termType.Object:
                     this.object = entity;
-                    this.nextTerm = termType.Predicate;
+                    this.nextTerm = termType.RightParen;
                     break;
             };
         }
